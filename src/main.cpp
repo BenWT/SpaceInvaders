@@ -118,15 +118,29 @@ int main(int argc, char *argv[]) {
 		 0.0f, 0.5, 0.0f
     }; */
 	GLfloat vertices[] = {
-         0.5f,  0.5f, 0.0f,  // Top Right
+		0.0f, 1.0f, 0.0f,
+		-0.5f, 0.0f, 0.0f,
+		0.5f, 0.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f
+	};
+	GLuint indices[] = {
+		0, 1, 2,
+		1, 3, 4,
+		2, 4, 5
+	};
+
+	/* GLfloat vertices[] = {
+         0.25f,  0.5f, 0.0f,  // Top Right
          0.5f, -0.5f, 0.0f,  // Bottom Right
         -0.5f, -0.5f, 0.0f,  // Bottom Left
-        -0.5f,  0.5f, 0.0f   // Top Left
+        -0.25f,  0.5f, 0.0f   // Top Left
     };
     GLuint indices[] = {  // Note that we start from 0!
         0, 1, 3,  // First Triangle
         1, 2, 3   // Second Triangle
-    };
+    };*/
 
 	// Create Buffers
 	GLuint vertBuffer, vertArray, elementBuffer;
@@ -158,19 +172,7 @@ int main(int argc, char *argv[]) {
 		frameTime = NowTime();
 
 		ProcessInput();
-		//Render(shaderProgram, vertArray);
-		//prerender
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	  	glClear(GL_COLOR_BUFFER_BIT);
-
-		glUseProgram(shaderProgram);
-		glBindVertexArray(vertArray);
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-
-		//post render
-		SDL_GL_SwapWindow(window);
+		Render(shaderProgram, vertArray);
 	}
 
 	// Cleanup on Close
@@ -204,15 +206,13 @@ void ProcessInput() {
 }
 
 void Render(GLuint shaderProgram, GLuint vertArray) {
-	//prerender
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vertArray);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
-	//post render
 	SDL_GL_SwapWindow(window);
 }

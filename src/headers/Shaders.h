@@ -8,23 +8,9 @@ const GLchar* vertShaderSource =
 
 
 const GLchar* fragShaderSource =
-	"#version 330 core\n"
-    "out vec4 color;\n"
-    "void main()\n"
-    "{\n"
-    "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-
-
-/*
-
-
-
-"
-	#vershion 330 core \n
-	layout (location = 0) in vec3 position;
-	void main() {
-		gl_Position = vec4(position.x, position.y, position.z, 1.0);
-	}
-";
-*/
+"#version 330 core\n"
+"out vec4 color;\n"
+"void main()\n"
+"{\n"
+"color = vec4(0.85f, 0.85f, 0.85f, 1.0f);\n"
+"}\n\0";
