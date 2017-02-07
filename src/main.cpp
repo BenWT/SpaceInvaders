@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <chrono>
+#include "headers/Shaders.h"
 
 // Namespaces
 using namespace std;
@@ -23,6 +24,7 @@ SDL_GLContext context;
 bool running = false;
 
 void ProcessInput();
+void Render(GLuint shaderProgram, GLuint vertArray);
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
@@ -43,17 +45,16 @@ int main(int argc, char *argv[]) {
 	int x = display.w, y = display.h;
 
 	// Create Window
-	window = SDL_CreateWindow("year2graphics", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, x / 2, y / 2, SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, x / 2, y / 2, SDL_WINDOW_OPENGL);
 	if (window == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL failed to create the window. \n");
 		return 1;
 	}
 
 	// OpenGL Attributes
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_PROFILE_CORE);
-  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	// Create Context
@@ -68,24 +69,114 @@ int main(int argc, char *argv[]) {
 	glewExperimental = GL_TRUE;
 	rev = glewInit();
 	if (GLEW_OK != rev) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL failed to initialise GLEW");
+		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL failed to initialise GLEW. \n");
 		return 1;
 	}
+
+	// Set viewport
+	glViewport(0, 0, x / 2, y / 2);
+
+	// Initialise Shaders
+	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint shaderProgram = glCreateProgram();
+	GLint success;
+
+	// Vertex Shader
+	glShaderSource(vertShader, 1, &vertShaderSource, NULL);
+	glCompileShader(vertShader);
+    glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "Vertex Shader error. \n");
+		running = false;
+    }
+
+	// Fragment Shader
+	glShaderSource(fragShader, 1, &fragShaderSource, NULL);
+	glCompileShader(fragShader);
+	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "Fragement Shader error. \n");
+		running = false;
+	}
+
+	// Shader Program
+	glAttachShader(shaderProgram, vertShader);
+	glAttachShader(shaderProgram, fragShader);
+	glLinkProgram(shaderProgram);
+    if (!success) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "Shader Program failed to start. \n");
+		running = false;
+    }
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+
+	// Set Vertices and Indices
+	/* GLfloat vertices[] = {
+         -0.5, -0.5, 0.0f,
+		 0.5, -0.5, 0.0f,
+		 0.0f, 0.5, 0.0f
+    }; */
+	GLfloat vertices[] = {
+         0.5f,  0.5f, 0.0f,  // Top Right
+         0.5f, -0.5f, 0.0f,  // Bottom Right
+        -0.5f, -0.5f, 0.0f,  // Bottom Left
+        -0.5f,  0.5f, 0.0f   // Top Left
+    };
+    GLuint indices[] = {  // Note that we start from 0!
+        0, 1, 3,  // First Triangle
+        1, 2, 3   // Second Triangle
+    };
+
+	// Create Buffers
+	GLuint vertBuffer, vertArray, elementBuffer;
+	glGenVertexArrays(1, &vertArray);
+	glGenBuffers(1, &vertBuffer);
+    glGenBuffers(1, &elementBuffer);
+
+	glBindVertexArray(vertArray);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	// Game Loop
 	running = true;
 	high_resolution_clock::time_point frameTime = NowTime(), updateStart = NowTime(), renderStart = NowTime();
-	double deltaTime = 0, inputTime = 0, updateTime = 0, renderTime = 0;
+	double deltaTime = 0;
 
 	while (running) {
 		deltaTime =  TimeSinceLastFrame(frameTime);
 		frameTime = NowTime();
 
 		ProcessInput();
-		Render();
+		//Render(shaderProgram, vertArray);
+		//prerender
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	  	glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(shaderProgram);
+		glBindVertexArray(vertArray);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		//post render
+		SDL_GL_SwapWindow(window);
 	}
 
 	// Cleanup on Close
+	glDeleteVertexArrays(1, &vertArray);
+	glDeleteBuffers(1, &vertBuffer);
+	glDeleteBuffers(1, &elementBuffer);
 	SDL_GL_DeleteContext(context);
 	window = NULL;
 	SDL_Quit();
@@ -112,11 +203,16 @@ void ProcessInput() {
 	}
 }
 
-void Render() {
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+void Render(GLuint shaderProgram, GLuint vertArray) {
+	//prerender
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Render here
+	glUseProgram(shaderProgram);
+	glBindVertexArray(vertArray);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0);
 
-	SDL_GL_SwapWindow(win);
+	//post render
+	SDL_GL_SwapWindow(window);
 }

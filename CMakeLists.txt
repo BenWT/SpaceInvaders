@@ -1,4 +1,4 @@
-set(PROJECT_NAME "year2graphics")
+set(PROJECT_NAME "SpaceInvaders")
 
 project(${PROJECT_NAME})
 cmake_minimum_required(VERSION 3.0)
