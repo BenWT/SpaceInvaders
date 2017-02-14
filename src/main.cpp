@@ -32,8 +32,7 @@ vector<GLuint> indices;
 
 void ProcessInput();
 void Render(GLuint shaderProgram, GLuint vertArray);
-void setVertices(int noOfIterations);
-void setIndices(int noOfIterations);
+void ChangeCircle(int n);
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
@@ -131,9 +130,7 @@ int main(int argc, char *argv[]) {
 	high_resolution_clock::time_point frameTime = NowTime();
 	double deltaTime = 0;
 
-	setVertices(360);
-	setIndices(360);
-	hasChanged = true;
+	ChangeCircle(4);
 
 	while (running) {
 		deltaTime =  TimeSinceLastFrame(frameTime);
@@ -186,6 +183,16 @@ void ProcessInput() {
 				if (k == SDLK_ESCAPE) {
 					running = false;
 				}
+				if (k == SDLK_1) ChangeCircle(4);
+				if (k == SDLK_2) ChangeCircle(8);
+				if (k == SDLK_3) ChangeCircle(16);
+				if (k == SDLK_4) ChangeCircle(32);
+				if (k == SDLK_5) ChangeCircle(64);
+				if (k == SDLK_6) ChangeCircle(128);
+				if (k == SDLK_7) ChangeCircle(256);
+				if (k == SDLK_8) ChangeCircle(512);
+				if (k == SDLK_9) ChangeCircle(180);
+				if (k == SDLK_0) ChangeCircle(360);
 			break;
 
 			case SDL_QUIT:
@@ -202,42 +209,36 @@ void Render(GLuint shaderProgram, GLuint vertArray) {
 
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vertArray);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	SDL_GL_SwapWindow(window);
 }
 
-void setVertices(int noOfIterations) {
-	float angle = 360 / noOfIterations;
+void ChangeCircle(int n) {
+	double angle = 360.0 / n;
 	vertices.clear();
-
-	// Centre Point
-	vertices.push_back(0.0f);
-	vertices.push_back(0.0f);
-	vertices.push_back(0.0f);
-
-	// Rest of points
-	for (int i = 0; i < noOfIterations; i++) {
-		// cos does x, sin does y
-		vertices.push_back(sin(i * angle * PI / 180));
-		vertices.push_back(cos(i * angle * PI / 180));
-		vertices.push_back(0.0f);
-	}
-}
-
-void setIndices(int noOfIterations) {
 	indices.clear();
 
-	for (int i = 1; i < noOfIterations + 1; i++) {
-		if (i == noOfIterations) {
-			indices.push_back(0);
-			indices.push_back(1);
-			indices.push_back(i);
-		} else {
-			indices.push_back(0);
-			indices.push_back(i);
-			indices.push_back(i + 1);
-		}
+	// Set Vertices
+	vertices.push_back(0.0f);
+	vertices.push_back(0.0f);
+	vertices.push_back(0.0f);
+
+	for (int i = 0; i < n; i++) {
+		vertices.push_back(cos(i * angle * PI / 180));
+		vertices.push_back(sin(i * angle * PI / 180));
+		vertices.push_back(0.0f);
 	}
+
+	// Set Indices
+	for (int i = 0; i <= n; i++) {
+		indices.push_back(0);
+		indices.push_back(i);
+
+		if (i == n) indices.push_back(1); // Last loops back to first
+		else indices.push_back(i + 1);
+	}
+
+	hasChanged = true;
 }
