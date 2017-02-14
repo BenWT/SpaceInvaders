@@ -5,14 +5,18 @@
 // Includes
 #include "headers/Globals.h"
 #include <iostream>
+#include <vector>
+#include <chrono>
+#include <cmath>
 #include <GL/glew.h>
 #include "SDL.h"
 #define GLM_FORCE_RADIANS // force glm to use radians
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <chrono>
 #include "headers/Shaders.h"
+
+#define PI 3.14159265
 
 // Namespaces
 using namespace std;
@@ -22,9 +26,14 @@ using namespace chrono;
 SDL_Window* window;
 SDL_GLContext context;
 bool running = false;
+bool hasChanged = true;
+vector<GLfloat> vertices;
+vector<GLuint> indices;
 
 void ProcessInput();
 void Render(GLuint shaderProgram, GLuint vertArray);
+void setVertices(int noOfIterations);
+void setIndices(int noOfIterations);
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
@@ -42,7 +51,10 @@ int main(int argc, char *argv[]) {
 	// Get Display Info
 	SDL_DisplayMode display;
 	SDL_GetCurrentDisplayMode(0, &display);
-	int x = display.w, y = display.h;
+
+	//int x = display.w, y = display.h;
+	// TODO Change back
+	int x = 1200, y = 1200;
 
 	// Create Window
 	window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, x / 2, y / 2, SDL_WINDOW_OPENGL);
@@ -111,65 +123,44 @@ int main(int argc, char *argv[]) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
-	// Set Vertices and Indices
-	/* GLfloat vertices[] = {
-         -0.5, -0.5, 0.0f,
-		 0.5, -0.5, 0.0f,
-		 0.0f, 0.5, 0.0f
-    }; */
-	GLfloat vertices[] = {
-		0.0f, 1.0f, 0.0f,
-		-0.5f, 0.0f, 0.0f,
-		0.5f, 0.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f
-	};
-	GLuint indices[] = {
-		0, 1, 2,
-		1, 3, 4,
-		2, 4, 5
-	};
-
-	/* GLfloat vertices[] = {
-         0.25f,  0.5f, 0.0f,  // Top Right
-         0.5f, -0.5f, 0.0f,  // Bottom Right
-        -0.5f, -0.5f, 0.0f,  // Bottom Left
-        -0.25f,  0.5f, 0.0f   // Top Left
-    };
-    GLuint indices[] = {  // Note that we start from 0!
-        0, 1, 3,  // First Triangle
-        1, 2, 3   // Second Triangle
-    };*/
-
-	// Create Buffers
+	// Initialise Buffers
 	GLuint vertBuffer, vertArray, elementBuffer;
-	glGenVertexArrays(1, &vertArray);
-	glGenBuffers(1, &vertBuffer);
-    glGenBuffers(1, &elementBuffer);
-
-	glBindVertexArray(vertArray);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 
 	// Game Loop
 	running = true;
-	high_resolution_clock::time_point frameTime = NowTime(), updateStart = NowTime(), renderStart = NowTime();
+	high_resolution_clock::time_point frameTime = NowTime();
 	double deltaTime = 0;
+
+	setVertices(360);
+	setIndices(360);
+	hasChanged = true;
 
 	while (running) {
 		deltaTime =  TimeSinceLastFrame(frameTime);
 		frameTime = NowTime();
+
+		if (hasChanged) {
+			// Fill Buffers
+			glGenVertexArrays(1, &vertArray);
+			glGenBuffers(1, &vertBuffer);
+		    glGenBuffers(1, &elementBuffer);
+
+			glBindVertexArray(vertArray);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
+			glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices.front(), GL_STATIC_DRAW);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices.front(), GL_STATIC_DRAW);
+
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+			glEnableVertexAttribArray(0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+
+			hasChanged = false;
+		}
 
 		ProcessInput();
 		Render(shaderProgram, vertArray);
@@ -211,8 +202,42 @@ void Render(GLuint shaderProgram, GLuint vertArray) {
 
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vertArray);
-	glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	SDL_GL_SwapWindow(window);
+}
+
+void setVertices(int noOfIterations) {
+	float angle = 360 / noOfIterations;
+	vertices.clear();
+
+	// Centre Point
+	vertices.push_back(0.0f);
+	vertices.push_back(0.0f);
+	vertices.push_back(0.0f);
+
+	// Rest of points
+	for (int i = 0; i < noOfIterations; i++) {
+		// cos does x, sin does y
+		vertices.push_back(sin(i * angle * PI / 180));
+		vertices.push_back(cos(i * angle * PI / 180));
+		vertices.push_back(0.0f);
+	}
+}
+
+void setIndices(int noOfIterations) {
+	indices.clear();
+
+	for (int i = 1; i < noOfIterations + 1; i++) {
+		if (i == noOfIterations) {
+			indices.push_back(0);
+			indices.push_back(1);
+			indices.push_back(i);
+		} else {
+			indices.push_back(0);
+			indices.push_back(i);
+			indices.push_back(i + 1);
+		}
+	}
 }
