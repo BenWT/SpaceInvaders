@@ -209,7 +209,7 @@ void Render(GLuint shaderProgram, GLuint vertArray) {
 
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vertArray);
-	glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
 	glBindVertexArray(0);
 
 	SDL_GL_SwapWindow(window);
@@ -226,8 +226,8 @@ void ChangeCircle(int n) {
 	vertices.push_back(0.0f);
 
 	for (int i = 0; i < n; i++) {
-		vertices.push_back(cos(i * angle * PI / 180));
-		vertices.push_back(sin(i * angle * PI / 180));
+		vertices.push_back(cos(i * angle * PI / 180.0));
+		vertices.push_back(sin(i * angle * PI / 180.0));
 		vertices.push_back(0.0f);
 	}
 
