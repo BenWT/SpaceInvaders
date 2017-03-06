@@ -9,6 +9,8 @@ conan_basic_setup()
 add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/headers/Globals.h
+	src/headers/Shaders.h
+	src/headers/GameObject.h
 )
 
 target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})

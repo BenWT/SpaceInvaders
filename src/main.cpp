@@ -6,6 +6,7 @@
 #include "headers/Globals.h"
 #include <iostream>
 #include <vector>
+#include <iterator>
 #include <chrono>
 #include <cmath>
 #include <GL/glew.h>
@@ -15,6 +16,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "headers/Shaders.h"
+#include "headers/GameObject.h"
+#include "headers/ObjectTypes/Plane.h"
+#include "headers/ObjectTypes/Alien.h"
 
 #define PI 3.14159265
 
@@ -30,8 +34,13 @@ bool hasChanged = true;
 vector<GLfloat> vertices;
 vector<GLuint> indices;
 
+vector<Alien> aliens;
+
 void ProcessInput();
+void Update(double deltaTime);
 void Render(GLuint shaderProgram, GLuint vertArray);
+void InitialiseAliens(int n, int r);
+void PopulateAliens();
 void ChangeCircle(int n);
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
@@ -50,10 +59,7 @@ int main(int argc, char *argv[]) {
 	// Get Display Info
 	SDL_DisplayMode display;
 	SDL_GetCurrentDisplayMode(0, &display);
-
-	//int x = display.w, y = display.h;
-	// TODO Change back
-	int x = 1200, y = 1200;
+	int x = display.w, y = display.h;
 
 	// Create Window
 	window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, x / 2, y / 2, SDL_WINDOW_OPENGL);
@@ -83,9 +89,6 @@ int main(int argc, char *argv[]) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL failed to initialise GLEW. \n");
 		return 1;
 	}
-
-	// Set viewport
-	glViewport(0, 0, x / 2, y / 2);
 
 	// Initialise Shaders
 	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
 	high_resolution_clock::time_point frameTime = NowTime();
 	double deltaTime = 0;
 
-	ChangeCircle(4);
+	ChangeCircle(360);
 
 	while (running) {
 		deltaTime =  TimeSinceLastFrame(frameTime);
@@ -160,6 +163,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		ProcessInput();
+		Update(deltaTime);
 		Render(shaderProgram, vertArray);
 	}
 
@@ -183,16 +187,6 @@ void ProcessInput() {
 				if (k == SDLK_ESCAPE) {
 					running = false;
 				}
-				if (k == SDLK_1) ChangeCircle(4);
-				if (k == SDLK_2) ChangeCircle(8);
-				if (k == SDLK_3) ChangeCircle(16);
-				if (k == SDLK_4) ChangeCircle(32);
-				if (k == SDLK_5) ChangeCircle(64);
-				if (k == SDLK_6) ChangeCircle(128);
-				if (k == SDLK_7) ChangeCircle(256);
-				if (k == SDLK_8) ChangeCircle(512);
-				if (k == SDLK_9) ChangeCircle(180);
-				if (k == SDLK_0) ChangeCircle(360);
 			break;
 
 			case SDL_QUIT:
@@ -203,17 +197,34 @@ void ProcessInput() {
 	}
 }
 
+void Update(double deltaTime) {
+	bool shouldMoveDown = false;
+
+	for (Alien a : aliens) {
+		if (a.DoMove()) shouldMoveDown = true;
+	}
+
+	if (shouldMoveDown) {
+		for (Alien a : aliens) {
+			a.MoveDown();
+		}
+	}
+}
+
 void Render(GLuint shaderProgram, GLuint vertArray) {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(shaderProgram);
-	glBindVertexArray(vertArray);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
-	glBindVertexArray(0);
+
+	for (Alien a : aliens) {
+		a.Render();
+	}
 
 	SDL_GL_SwapWindow(window);
 }
+
+// TODO create aliens
 
 void ChangeCircle(int n) {
 	double angle = 360.0 / n;
