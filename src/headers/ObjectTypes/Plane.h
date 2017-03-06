@@ -1,22 +1,23 @@
+#pragma once
 #include <string>
 #include "../GameObject.h"
 
 class Plane : public GameObject {
 private:
 	void AddCoord(GLfloat x, GLfloat y) {
-		this.vertices.push_back(x);
-		this.vertices.push_back(y);
-		this.vertices.push_back(0);
+		vertices.push_back(x);
+		vertices.push_back(y);
+		vertices.push_back(0);
 	}
 public:
 	GLfloat x, y, w, h;
 
-	Plane(int itemIndex, GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
-		this.itemIndex = itemIndex;
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
+	Plane() {}
+	Plane(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+		this->x = x;
+		this->y = y;
+		this->w = w;
+		this->h = h;
 	}
 
 	void SetPlane() {
@@ -25,12 +26,12 @@ public:
 		AddCoord(x - (w / 2), y - (h / 2)); // Bottom Left
 		AddCoord(x + (w / 2), y - (h / 2)); // Bottom Right
 
-		this.indices.push_back(2);
-		this.indices.push_back(0);
-		this.indices.push_back(1);
+		indices.push_back(2);
+		indices.push_back(0);
+		indices.push_back(1);
 
-		this.indices.push_back(1);
-		this.indices.push_back(3);
-		this.indices.push_back(2);
+		indices.push_back(1);
+		indices.push_back(3);
+		indices.push_back(2);
 	}
 };

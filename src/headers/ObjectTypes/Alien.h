@@ -1,14 +1,16 @@
+#pragma once
 #include <string>
 #include "Plane.h"
 
-class GameObject : public Plane {
+class Alien : public Plane {
 public:
-	Plane(int itemIndex, GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
-		this.itemIndex = itemIndex;
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
+	Alien(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+		this->x = x;
+		this->y = y;
+		this->w = w;
+		this->h = h;
+
+		SetPlane();
 	}
 
 	bool DoMove() {
@@ -19,6 +21,6 @@ public:
 	}
 
 	void MoveDown() {
-		
+
 	}
 };

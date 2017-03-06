@@ -30,18 +30,13 @@ using namespace chrono;
 SDL_Window* window;
 SDL_GLContext context;
 bool running = false;
-bool hasChanged = true;
-vector<GLfloat> vertices;
-vector<GLuint> indices;
-
 vector<Alien> aliens;
 
 void ProcessInput();
 void Update(double deltaTime);
-void Render(GLuint shaderProgram, GLuint vertArray);
+void Render(GLuint shaderProgram);
 void InitialiseAliens(int n, int r);
 void PopulateAliens();
-void ChangeCircle(int n);
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
@@ -125,52 +120,26 @@ int main(int argc, char *argv[]) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
-	// Initialise Buffers
-	GLuint vertBuffer, vertArray, elementBuffer;
-
 	// Game Loop
 	running = true;
 	high_resolution_clock::time_point frameTime = NowTime();
 	double deltaTime = 0;
 
-	ChangeCircle(360);
+	Alien a = Alien(0.5, 0.5, 1, 1);
+	Alien b = Alien(-0.5, -0.5, 1, 1);
+	aliens.push_back(a);
+	aliens.push_back(b);
 
 	while (running) {
 		deltaTime =  TimeSinceLastFrame(frameTime);
 		frameTime = NowTime();
 
-		if (hasChanged) {
-			// Fill Buffers
-			glGenVertexArrays(1, &vertArray);
-			glGenBuffers(1, &vertBuffer);
-		    glGenBuffers(1, &elementBuffer);
-
-			glBindVertexArray(vertArray);
-
-			glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
-			glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices.front(), GL_STATIC_DRAW);
-
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices.front(), GL_STATIC_DRAW);
-
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-			glEnableVertexAttribArray(0);
-
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glBindVertexArray(0);
-
-			hasChanged = false;
-		}
-
 		ProcessInput();
 		Update(deltaTime);
-		Render(shaderProgram, vertArray);
+		Render(shaderProgram);
 	}
 
 	// Cleanup on Close
-	glDeleteVertexArrays(1, &vertArray);
-	glDeleteBuffers(1, &vertBuffer);
-	glDeleteBuffers(1, &elementBuffer);
 	SDL_GL_DeleteContext(context);
 	window = NULL;
 	SDL_Quit();
@@ -211,7 +180,7 @@ void Update(double deltaTime) {
 	}
 }
 
-void Render(GLuint shaderProgram, GLuint vertArray) {
+void Render(GLuint shaderProgram) {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -225,31 +194,3 @@ void Render(GLuint shaderProgram, GLuint vertArray) {
 }
 
 // TODO create aliens
-
-void ChangeCircle(int n) {
-	double angle = 360.0 / n;
-	vertices.clear();
-	indices.clear();
-
-	// Set Vertices
-	vertices.push_back(0.0f);
-	vertices.push_back(0.0f);
-	vertices.push_back(0.0f);
-
-	for (int i = 0; i < n; i++) {
-		vertices.push_back(cos(i * angle * PI / 180.0));
-		vertices.push_back(sin(i * angle * PI / 180.0));
-		vertices.push_back(0.0f);
-	}
-
-	// Set Indices
-	for (int i = 0; i <= n; i++) {
-		indices.push_back(0);
-		indices.push_back(i);
-
-		if (i == n) indices.push_back(1); // Last loops back to first
-		else indices.push_back(i + 1);
-	}
-
-	hasChanged = true;
-}

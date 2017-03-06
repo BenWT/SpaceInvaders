@@ -1,27 +1,24 @@
+#pragma once
 #include <vector>
 #include <iterator>
 
 class GameObject {
 public:
-	int itemIndex;
 	GLfloat x, y, z;
 	GLuint vertBuffer, vertArray, elementBuffer;
-	vector<GLfloat> vertices;
-	vector<GLuint> indices;
+	std::vector<GLfloat> vertices;
+	std::vector<GLuint> indices;
 
-	GameObject() {
-		this.itemIndex = 0;
-	}
-	GameObject(int itemIndex, vector<GLfloat> vertices, vector<GLuint> indices) {
-		this.itemIndex = itemIndex;
-		this.vertices = vertices;
-		this.indices = indices;
+	GameObject() {}
+	GameObject(std::vector<GLfloat> vertices, std::vector<GLuint> indices) {
+		this->vertices = vertices;
+		this->indices = indices;
 	}
 
-	void CreateBuffers() {
-		glGenVertexArrays(itemIndex, &vertArray);
-		glGenBuffers(itemIndex, &vertBuffer);
-		glGenBuffers(itemIndex, &elementBuffer);
+	void BindBuffers() {
+		glGenVertexArrays(1, &vertArray);
+		glGenBuffers(1, &vertBuffer);
+		glGenBuffers(1, &elementBuffer);
 
 		glBindVertexArray(vertArray);
 
@@ -40,6 +37,7 @@ public:
 
 	void Render() {
 		// bind texture here
+		BindBuffers();
 		glBindVertexArray(vertArray);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
 		glBindVertexArray(0);
