@@ -45,7 +45,7 @@ public:
 	}
 
 	// TODO implement transformations
-	void Move() { }
-	void Rotate() { }
-	void Scale() { }
+	void Move(GLfloat x, GLfloat y, GLfloat z) { }
+	void Rotate(GLfloat x, GLfloat y, GLfloat z) { }
+	void Scale(GLfloat x, GLfloat y, GLfloat z) { }
 };

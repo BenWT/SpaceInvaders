@@ -170,7 +170,7 @@ void Update(double deltaTime) {
 	bool shouldMoveDown = false;
 
 	for (Alien a : aliens) {
-		if (a.DoMove()) shouldMoveDown = true;
+		if (a.DoMove(deltaTime)) shouldMoveDown = true;
 	}
 
 	if (shouldMoveDown) {
