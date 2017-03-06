@@ -5,6 +5,15 @@
 class Alien : public Plane {
 public:
 	GLfloat speed = 200;
+
+	Alien(GLfloat x, GLfloat y, GLfloat size) {
+		this->x = x;
+		this->y = y;
+		this->w = size;
+		this->h = size;
+
+		SetPlane();
+	}
 	Alien(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 		this->x = x;
 		this->y = y;
@@ -25,7 +34,7 @@ public:
 	void MoveDown() {
 		// if (y > miny)
 		Move(0, h, 0);
-		
+
 		speed = -speed;
 	}
 };

@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	// TODO read and compile shaders from file
 	// Initialise Shaders
 	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -120,15 +121,12 @@ int main(int argc, char *argv[]) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
+	PopulateAliens();
+
 	// Game Loop
 	running = true;
 	high_resolution_clock::time_point frameTime = NowTime();
 	double deltaTime = 0;
-
-	Alien a = Alien(0.5, 0.5, 1, 1);
-	Alien b = Alien(-0.5, -0.5, 1, 1);
-	aliens.push_back(a);
-	aliens.push_back(b);
 
 	while (running) {
 		deltaTime =  TimeSinceLastFrame(frameTime);
@@ -193,4 +191,14 @@ void Render(GLuint shaderProgram) {
 	SDL_GL_SwapWindow(window);
 }
 
-// TODO create aliens
+void PopulateAliens() {
+	int columns = 10, rows = 3;
+	GLfloat top = 1.0, left = -1.0, size = 0.2;
+
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < columns; j++) {
+			Alien a = Alien((left - size / 2) + (j * size), (top - size / 2) - (i * size), size);
+			aliens.push_back(a);
+		}
+	}
+}
