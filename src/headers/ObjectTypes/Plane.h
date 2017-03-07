@@ -13,9 +13,9 @@ public:
 	GLfloat w, h;
 
 	Plane() {}
-	Plane(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
-		this->x = x;
-		this->y = y;
+	Plane(GLfloat xPos, GLfloat yPos, GLfloat w, GLfloat h) {
+		this->xPos = xPos;
+		this->yPos = yPos;
 		this->w = w;
 		this->h = h;
 	}
@@ -34,7 +34,6 @@ public:
 		indices.push_back(3);
 		indices.push_back(2);
 
-		// translate to the starting place
-		translation = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
+		//translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, zPos));
 	}
 };

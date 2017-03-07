@@ -155,6 +155,9 @@ void ProcessInput() {
 				if (k == SDLK_ESCAPE) {
 					running = false;
 				}
+				if (k == SDLK_d) {
+					aliens[0].DoMove(0.01f);
+				}
 			break;
 
 			case SDL_QUIT:
@@ -168,16 +171,14 @@ void ProcessInput() {
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
 
-	for (Alien a : aliens) {
-		if (a.DoMove(deltaTime)) {
-			shouldMoveDown = true;
-			break;
-		}
+	vector<Alien>::iterator it;
+	for (it = aliens.begin(); it < aliens.end(); it++) {
+		if (it->DoMove(deltaTime)) shouldMoveDown = true;
 	}
 
 	if (shouldMoveDown) {
-		for (Alien a : aliens) {
-			a.MoveDown();
+		for (it = aliens.begin(); it < aliens.end(); it++) {
+			it->MoveDown();
 		}
 	}
 }
@@ -188,21 +189,23 @@ void Render(GLuint shaderProgram) {
 
 	glUseProgram(shaderProgram);
 
-	for (Alien a : aliens) {
-		a.Render(shaderProgram);
+	vector<Alien>::iterator it;
+	for (it = aliens.begin(); it < aliens.end(); it++) {
+		it->Render(shaderProgram);
 	}
 
 	SDL_GL_SwapWindow(window);
 }
 
 void PopulateAliens() {
-	int columns = 10, rows = 3;
+	int columns = 6, rows = 3;
 	GLfloat top = 1.0, left = -1.0, size = 0.2;
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
-			Alien a = Alien((left - size / 2) + (j * size), (top - size / 2) - (i * size), size);
-			aliens.push_back(a);
+			Alien* a = new Alien((left + size / 2) + (j * size), (top - size / 2) - (i * size), size);
+			aliens.push_back(*a);
+			delete a;
 		}
 	}
 }

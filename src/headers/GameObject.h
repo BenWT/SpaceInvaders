@@ -6,7 +6,7 @@
 class GameObject {
 public:
 	glm::mat4 translation, rotation, scale;
-	GLfloat x = 0.0f, y = 0.0f, z = 0.0f;
+	GLfloat xPos = 0.0f, yPos = 0.0f, zPos = 0.0f;
 	GLfloat xRot = 0.0f, yRot = 0.0f, zRot = 0.0f;
 	GLuint vertBuffer, vertArray, elementBuffer;
 	std::vector<GLfloat> vertices;
@@ -45,17 +45,21 @@ public:
 		// bind texture here
 		if (shouldBuffer) BindBuffers();
 
+		translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, zPos));
+
 		GLint transLocation = glGetUniformLocation(shaderProgram, "trans");
 		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(translation));
 
 		glBindVertexArray(vertArray);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
+		glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
 		glBindVertexArray(0);
 		// unbind texture here
 	}
 
 	// TODO implement transformations
 	void Move(GLfloat x, GLfloat y, GLfloat z) {
-
+		xPos += x;
+		yPos += y;
+		zPos += z;
 	}
 };

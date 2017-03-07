@@ -5,19 +5,20 @@
 
 class Alien : public Plane {
 public:
-	GLfloat speed = 200;
+	GLfloat moveAmount = 0.05f;
+	bool moveRight = true;
 
-	Alien(GLfloat x, GLfloat y, GLfloat size) {
-		this->x = x;
-		this->y = y;
+	Alien(GLfloat xPos, GLfloat yPos, GLfloat size) {
+		this->xPos = xPos;
+		this->yPos = yPos;
 		this->w = size;
 		this->h = size;
 
 		SetPlane();
 	}
-	Alien(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
-		this->x = x;
-		this->y = y;
+	Alien(GLfloat xPos, GLfloat yPos, GLfloat w, GLfloat h) {
+		this->xPos = xPos;
+		this->yPos = yPos;
 		this->w = w;
 		this->h = h;
 
@@ -25,17 +26,17 @@ public:
 	}
 
 	bool DoMove(double deltaTime) {
-		Move(speed * deltaTime, 0, 0);
+		if (xPos > 0.9f && moveRight) return true;
+		else if (xPos < -0.9f && !moveRight) return true;
 
-		//if (x >= max || x <= -max) return true;
-		// if (y > min y) return true;
+		if (moveRight) Move(moveAmount * deltaTime, 0.0f, 0.0f);
+		else Move(-moveAmount * deltaTime, 0.0f, 0.0f);
+
 		return false;
 	}
 
 	void MoveDown() {
-		// if (y > miny)
-		Move(0, h, 0);
-
-		speed = -speed;
+		Move(0, -h, 0);
+		moveRight = !moveRight;
 	}
 };
