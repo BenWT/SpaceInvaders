@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 	GLint success;
 
 	// Vertex Shader
-	glShaderSource(vertShader, 1, &vertShaderSource, NULL);
+	glShaderSource(vertShader, 1, vertShaderSource, NULL);
 	glCompileShader(vertShader);
     glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     }
 
 	// Fragment Shader
-	glShaderSource(fragShader, 1, &fragShaderSource, NULL);
+	glShaderSource(fragShader, 1, fragShaderSource, NULL);
 	glCompileShader(fragShader);
 	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
 	if (!success) {
@@ -138,8 +138,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Cleanup on Close
+	aliens.clear();
+	aliens.shrink_to_fit();
 	SDL_GL_DeleteContext(context);
-	window = NULL;
 	SDL_Quit();
 	return 0;
 }
@@ -168,7 +169,10 @@ void Update(double deltaTime) {
 	bool shouldMoveDown = false;
 
 	for (Alien a : aliens) {
-		if (a.DoMove(deltaTime)) shouldMoveDown = true;
+		if (a.DoMove(deltaTime)) {
+			shouldMoveDown = true;
+			break;
+		}
 	}
 
 	if (shouldMoveDown) {
@@ -185,7 +189,7 @@ void Render(GLuint shaderProgram) {
 	glUseProgram(shaderProgram);
 
 	for (Alien a : aliens) {
-		a.Render();
+		a.Render(shaderProgram);
 	}
 
 	SDL_GL_SwapWindow(window);
