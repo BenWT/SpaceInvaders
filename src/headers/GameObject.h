@@ -47,7 +47,6 @@ public:
 
 		translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, zPos));
 		rotation = glm::rotate(translation, glm::radians(xRot), glm::vec3(1.0f, 0.0f, 0.0f));
-		rotation = glm::rotate(translation, glm::radians(xRot), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(yRot), glm::vec3(0.0f, 1.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(zRot), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -55,7 +54,7 @@ public:
 		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(rotation));
 
 		glBindVertexArray(vertArray);
-		glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
 		glBindVertexArray(0);
 		// unbind texture here
 	}

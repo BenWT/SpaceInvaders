@@ -18,6 +18,7 @@
 #include "headers/Shaders.h"
 #include "headers/GameObject.h"
 #include "headers/ObjectTypes/Plane.h"
+#include "headers/ObjectTypes/Player.h"
 #include "headers/ObjectTypes/Alien.h"
 
 #define PI 3.14159265
@@ -30,13 +31,13 @@ using namespace chrono;
 SDL_Window* window;
 SDL_GLContext context;
 bool running = false;
+Player player;
 vector<Alien> aliens;
 
 void ProcessInput();
 void Update(double deltaTime);
 void Render(GLuint shaderProgram);
-void InitialiseAliens(int n, int r);
-void PopulateAliens();
+void GenerateGame();
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
@@ -121,7 +122,7 @@ int main(int argc, char *argv[]) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
-	PopulateAliens();
+	GenerateGame();
 
 	// Game Loop
 	running = true;
@@ -146,17 +147,25 @@ int main(int argc, char *argv[]) {
 }
 
 void ProcessInput() {
+
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		SDL_Keycode k = event.key.keysym.sym;
 
 		switch (event.type) {
+			case SDL_KEYUP:
+				if (k == SDLK_a || k == SDLK_d) player.movementInputX = 0;
+			break;
+
 			case SDL_KEYDOWN:
 				if (k == SDLK_ESCAPE) {
 					running = false;
 				}
-				if (k == SDLK_d) {
-					aliens[0].DoMove(0.01f);
+
+				if (k == SDLK_a) {
+					player.movementInputX = -1;
+				} else if (k == SDLK_d) {
+					player.movementInputX = 1;
 				}
 			break;
 
@@ -170,6 +179,8 @@ void ProcessInput() {
 
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
+
+	player.DoMove(deltaTime);
 
 	vector<Alien>::iterator it;
 	for (it = aliens.begin(); it < aliens.end(); it++) {
@@ -189,6 +200,8 @@ void Render(GLuint shaderProgram) {
 
 	glUseProgram(shaderProgram);
 
+	player.Render(shaderProgram);
+
 	vector<Alien>::iterator it;
 	for (it = aliens.begin(); it < aliens.end(); it++) {
 		it->Render(shaderProgram);
@@ -197,9 +210,15 @@ void Render(GLuint shaderProgram) {
 	SDL_GL_SwapWindow(window);
 }
 
-void PopulateAliens() {
+void GenerateGame() {
+	aliens.clear();
+
 	int columns = 6, rows = 3;
 	GLfloat top = 1.0, left = -1.0, size = 0.2;
+
+	Player* p = new Player(0.0f, -0.9f, size);
+	player = *p;
+	delete p;
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
