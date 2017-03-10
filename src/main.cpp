@@ -10,7 +10,7 @@
 #include <cmath>
 #include <GL/glew.h>
 #include "SDL.h"
-#include "SDL_image.h"
+//#include "SDL_image.h"
 #define GLM_FORCE_RADIANS // force glm to use radians
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -62,11 +62,12 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	int imgFlags = IMG_INIT_PNG;
+	/* int imgFlags = IMG_INIT_PNG;
 	if (!(IMG_Init(imgFlags) & imgFlags)) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL_image failed to initialise. \n");
 		return 1;
-	}
+	} */
+	cout << "no image" << endl;
 
 	// Get Display Info
 	SDL_DisplayMode display;
