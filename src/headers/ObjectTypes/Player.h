@@ -1,12 +1,15 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <vector>
+#include <iterator>
 #include "Plane.h"
 
 class Player : public Plane {
 public:
 	double moveAmount = 0.25f;
     double movementInputX = 0.0f;
+	std::vector<Plane> bullets;
 
     Player() {}
     Player(GLfloat xPos, GLfloat yPos, GLfloat size) {
@@ -32,4 +35,8 @@ public:
         if (xPos > 0.9f) xPos = 0.9f;
         if (xPos < -0.9f) xPos = -0.9f;
     }
+
+	void FireGun() {
+		std::cout << "Fire Gun" << std::endl;
+	}
 };

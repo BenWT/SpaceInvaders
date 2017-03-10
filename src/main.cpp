@@ -3,7 +3,6 @@
 //
 
 // Includes
-#include "headers/Globals.h"
 #include <iostream>
 #include <vector>
 #include <iterator>
@@ -11,6 +10,7 @@
 #include <cmath>
 #include <GL/glew.h>
 #include "SDL.h"
+#include "SDL_image.h"
 #define GLM_FORCE_RADIANS // force glm to use radians
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,18 +31,28 @@ using namespace chrono;
 SDL_Window* window;
 SDL_GLContext context;
 bool running = false;
+GLfloat viewportHeight, viewportWidth;
+Plane background;
 Player player;
 vector<Alien> aliens;
 
 void ProcessInput();
 void Update(double deltaTime);
-void Render(GLuint shaderProgram);
+void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat);
 void GenerateGame();
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
 double TimeSinceLastFrame(high_resolution_clock::time_point frameTime) {
 	return (duration_cast<microseconds>(NowTime() - frameTime).count()) / 1000000.0;
+}
+void SizeWindow() {
+	int w, h, desiredW;
+	w = SDL_GetWindowSurface(window)->w;
+	h = SDL_GetWindowSurface(window)->h;
+	desiredW = (h / 3.0f) * 4.0f;
+
+	glViewport((w - desiredW) / 2, 0.0f, desiredW, h);
 }
 
 int main(int argc, char *argv[]) {
@@ -52,13 +62,19 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	int imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL_image failed to initialise. \n");
+		return 1;
+	}
+
 	// Get Display Info
 	SDL_DisplayMode display;
 	SDL_GetCurrentDisplayMode(0, &display);
 	int x = display.w, y = display.h;
 
 	// Create Window
-	window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, x / 2, y / 2, SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if (window == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL failed to create the window. \n");
 		return 1;
@@ -86,7 +102,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	// TODO read and compile shaders from file
 	// Initialise Shaders
 	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -122,6 +137,13 @@ int main(int argc, char *argv[]) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
+	glm::mat4 projectionMat, viewMat;
+
+	// force 4:3 aspect using viewport
+	SizeWindow();
+	projectionMat = glm::ortho(0.0f, 4.0f, 0.0f, 3.0f, -1.0f, 100.0f);
+	viewMat = glm::translate(viewMat, glm::vec3(2.0f, 1.5f, 0.0f));
+
 	GenerateGame();
 
 	// Game Loop
@@ -135,7 +157,7 @@ int main(int argc, char *argv[]) {
 
 		ProcessInput();
 		Update(deltaTime);
-		Render(shaderProgram);
+		Render(shaderProgram, projectionMat, viewMat);
 	}
 
 	// Cleanup on Close
@@ -153,20 +175,24 @@ void ProcessInput() {
 		SDL_Keycode k = event.key.keysym.sym;
 
 		switch (event.type) {
+			case SDL_WINDOWEVENT:
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+					SizeWindow();
+				}
+			break;
+			case SDL_MOUSEBUTTONDOWN:
+				if (event.button.button == SDL_BUTTON_LEFT) player.FireGun();
+			break;
+
 			case SDL_KEYUP:
 				if (k == SDLK_a || k == SDLK_d) player.movementInputX = 0;
 			break;
 
 			case SDL_KEYDOWN:
-				if (k == SDLK_ESCAPE) {
-					running = false;
-				}
+				if (k == SDLK_ESCAPE) running = false;
 
-				if (k == SDLK_a) {
-					player.movementInputX = -1;
-				} else if (k == SDLK_d) {
-					player.movementInputX = 1;
-				}
+				if (k == SDLK_a) player.movementInputX = -1;
+				else if (k == SDLK_d) player.movementInputX = 1;
 			break;
 
 			case SDL_QUIT:
@@ -194,29 +220,34 @@ void Update(double deltaTime) {
 	}
 }
 
-void Render(GLuint shaderProgram) {
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat) {
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(shaderProgram);
 
-	player.Render(shaderProgram);
+	//background.Render(shaderProgram, projectionMat, viewMat);
+	player.Render(shaderProgram, projectionMat, viewMat);
 
 	vector<Alien>::iterator it;
 	for (it = aliens.begin(); it < aliens.end(); it++) {
-		it->Render(shaderProgram);
+		it->Render(shaderProgram, projectionMat, viewMat);
 	}
 
 	SDL_GL_SwapWindow(window);
 }
 
 void GenerateGame() {
+	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
+	background = *bg;
+	delete bg;
+
 	aliens.clear();
 
 	int columns = 6, rows = 3;
-	GLfloat top = 1.0, left = -1.0, size = 0.2;
+	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, size = 0.2f;
 
-	Player* p = new Player(0.0f, -0.9f, size);
+	Player* p = new Player(0.0f, bottom + (size / 2), size);
 	player = *p;
 	delete p;
 

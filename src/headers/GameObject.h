@@ -41,11 +41,11 @@ public:
 		shouldBuffer = false;
 	}
 
-	void Render(GLuint &shaderProgram) {
+	void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat) {
 		// bind texture here
 		if (shouldBuffer) BindBuffers();
 
-		translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, zPos));
+		translation = glm::translate(projectionMat * viewMat, glm::vec3(xPos, yPos, zPos));
 		rotation = glm::rotate(translation, glm::radians(xRot), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(yRot), glm::vec3(0.0f, 1.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(zRot), glm::vec3(0.0f, 0.0f, 1.0f));

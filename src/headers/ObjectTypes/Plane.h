@@ -18,6 +18,8 @@ public:
 		this->yPos = yPos;
 		this->w = w;
 		this->h = h;
+
+		SetPlane();
 	}
 
 	void SetPlane() {
@@ -35,5 +37,14 @@ public:
 		indices.push_back(2);
 
 		//translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, zPos));
+	}
+
+	bool CheckCollision(GLfloat x, GLfloat y) {
+		if (x >= xPos - (w / 2) && x <= xPos + (w / 2)) {
+			if (y >= yPos - (h / 2) && y <= yPos + (h / 2)) {
+				return true;
+			}
+		}
+		return false;
 	}
 };
