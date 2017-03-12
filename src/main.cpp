@@ -17,6 +17,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "headers/Shaders.h"
 #include "headers/GameObject.h"
+#include "headers/GameState.h"
 #include "headers/ObjectTypes/Plane.h"
 #include "headers/ObjectTypes/Player.h"
 #include "headers/ObjectTypes/Alien.h"
@@ -32,9 +33,7 @@ SDL_Window* window;
 SDL_GLContext context;
 bool running = false;
 GLfloat viewportHeight, viewportWidth;
-Plane background;
-Player player;
-vector<Alien> aliens;
+GameState gameState;
 
 void ProcessInput();
 void Update(double deltaTime);
@@ -144,6 +143,7 @@ int main(int argc, char *argv[]) {
 	projectionMat = glm::ortho(0.0f, 4.0f, 0.0f, 3.0f, -1.0f, 100.0f);
 	viewMat = glm::translate(viewMat, glm::vec3(2.0f, 1.5f, 0.0f));
 
+	gameState = GameState();
 	GenerateGame();
 
 	// Game Loop
@@ -161,8 +161,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Cleanup on Close
-	aliens.clear();
-	aliens.shrink_to_fit();
+	gameState.aliens.clear();
+	gameState.aliens.shrink_to_fit();
 	SDL_GL_DeleteContext(context);
 	SDL_Quit();
 	return 0;
@@ -181,18 +181,19 @@ void ProcessInput() {
 				}
 			break;
 			case SDL_MOUSEBUTTONDOWN:
-				if (event.button.button == SDL_BUTTON_LEFT) player.FireGun();
+				if (event.button.button == SDL_BUTTON_LEFT) gameState.PlayerFire();
 			break;
 
+			// TODO Make not janky
 			case SDL_KEYUP:
-				if (k == SDLK_a || k == SDLK_d) player.movementInputX = 0;
+				if (k == SDLK_a || k == SDLK_d) gameState.player.movementInputX = 0;
 			break;
 
 			case SDL_KEYDOWN:
 				if (k == SDLK_ESCAPE) running = false;
 
-				if (k == SDLK_a) player.movementInputX = -1;
-				else if (k == SDLK_d) player.movementInputX = 1;
+				if (k == SDLK_a) gameState.player.movementInputX = -1;
+				else if (k == SDLK_d) gameState.player.movementInputX = 1;
 			break;
 
 			case SDL_QUIT:
@@ -206,16 +207,23 @@ void ProcessInput() {
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
 
-	player.DoMove(deltaTime);
+	gameState.DoCollisions(deltaTime);
 
-	vector<Alien>::iterator it;
-	for (it = aliens.begin(); it < aliens.end(); it++) {
-		if (it->DoMove(deltaTime)) shouldMoveDown = true;
+	gameState.player.DoMove(deltaTime);
+
+	vector<PlayerBullet>::iterator pBulletIT;
+	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
+		pBulletIT->DoMove(deltaTime);
 	}
 
+	vector<Alien>::iterator alienIT;
+	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
+		// TODO alien death animation here
+		if (alienIT->DoMove(deltaTime)) shouldMoveDown = true;
+	}
 	if (shouldMoveDown) {
-		for (it = aliens.begin(); it < aliens.end(); it++) {
-			it->MoveDown();
+		for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
+			alienIT->MoveDown();
 		}
 	}
 }
@@ -227,11 +235,16 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 	glUseProgram(shaderProgram);
 
 	//background.Render(shaderProgram, projectionMat, viewMat);
-	player.Render(shaderProgram, projectionMat, viewMat);
+	gameState.player.Render(shaderProgram, projectionMat, viewMat);
 
-	vector<Alien>::iterator it;
-	for (it = aliens.begin(); it < aliens.end(); it++) {
-		it->Render(shaderProgram, projectionMat, viewMat);
+	vector<PlayerBullet>::iterator pBulletIT;
+	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
+		pBulletIT->Render(shaderProgram, projectionMat, viewMat);
+	}
+
+	vector<Alien>::iterator alienIT;
+	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
+		alienIT->Render(shaderProgram, projectionMat, viewMat);
 	}
 
 	SDL_GL_SwapWindow(window);
@@ -239,22 +252,22 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 
 void GenerateGame() {
 	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
-	background = *bg;
+	gameState.background = *bg;
 	delete bg;
 
-	aliens.clear();
+	gameState.aliens.clear();
 
 	int columns = 6, rows = 3;
 	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, size = 0.2f;
 
 	Player* p = new Player(0.0f, bottom + (size / 2), size);
-	player = *p;
+	gameState.player = *p;
 	delete p;
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
 			Alien* a = new Alien((left + size / 2) + (j * size), (top - size / 2) - (i * size), size);
-			aliens.push_back(*a);
+			gameState.aliens.push_back(*a);
 			delete a;
 		}
 	}

@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
 	src/headers/ObjectTypes/Alien.h
 	src/headers/ObjectTypes/Plane.h
 	src/headers/ObjectTypes/Player.h
+	src/headers/ObjectTypes/PlayerBullet.h
 )
 
 target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})

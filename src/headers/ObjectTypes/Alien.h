@@ -6,7 +6,7 @@
 class Alien : public Plane {
 public:
 	double moveAmount = 0.05f;
-	bool moveRight = true;
+	bool moveRight = true, isAlive = true;
 
 	Alien(GLfloat xPos, GLfloat yPos, GLfloat size) {
 		this->xPos = xPos;

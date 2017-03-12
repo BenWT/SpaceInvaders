@@ -35,8 +35,4 @@ public:
         if (xPos > 0.9f) xPos = 0.9f;
         if (xPos < -0.9f) xPos = -0.9f;
     }
-
-	void FireGun() {
-		std::cout << "Fire Gun" << std::endl;
-	}
 };
