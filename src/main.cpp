@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	// Initialise SDL_image
 	int imgFlags = IMG_INIT_PNG;
 	if (!(IMG_Init(imgFlags) & imgFlags)) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL_image failed to initialise. \n");
@@ -251,14 +252,17 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 }
 
 void GenerateGame() {
-	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
-	gameState.background = *bg;
-	delete bg;
-
 	gameState.aliens.clear();
+	gameState.playerBullets.clear();
+
+	// load all textures
 
 	int columns = 6, rows = 3;
 	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, size = 0.2f;
+
+	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
+	gameState.background = *bg;
+	delete bg;
 
 	Player* p = new Player(0.0f, bottom + (size / 2), size);
 	gameState.player = *p;

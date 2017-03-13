@@ -35,8 +35,6 @@ public:
 		indices.push_back(1);
 		indices.push_back(3);
 		indices.push_back(2);
-
-		//translation = glm::translate(glm::mat4(1.0f), glm::vec3(xPos, yPos, zPos));
 	}
 
 	bool CheckCollision(GLfloat x, GLfloat y) {

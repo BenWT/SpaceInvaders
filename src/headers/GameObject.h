@@ -8,6 +8,7 @@ public:
 	glm::mat4 translation, rotation, scale;
 	GLfloat xPos = 0.0f, yPos = 0.0f, zPos = 0.0f;
 	GLfloat xRot = 0.0f, yRot = 0.0f, zRot = 0.0f;
+	GLfloat xScale = 1.0f, yScale = 1.0f, zScale = 1.0f;
 	GLuint vertBuffer, vertArray, elementBuffer;
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
@@ -42,7 +43,6 @@ public:
 	}
 
 	void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat) {
-		// bind texture here
 		if (shouldBuffer) BindBuffers();
 
 		translation = glm::translate(projectionMat * viewMat, glm::vec3(xPos, yPos, zPos));
@@ -53,6 +53,7 @@ public:
 		GLint transLocation = glGetUniformLocation(shaderProgram, "trans");
 		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(rotation));
 
+		// bind texture here
 		glBindVertexArray(vertArray);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
 		glBindVertexArray(0);
@@ -70,5 +71,11 @@ public:
 		xRot += x;
 		yRot += y;
 		zRot += z;
+	}
+
+	void Scale(GLfloat x, GLfloat y, GLfloat z) {
+		xScale += x;
+		yScale += y;
+		zScale += z;
 	}
 };
