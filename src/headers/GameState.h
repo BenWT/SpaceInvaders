@@ -13,9 +13,11 @@ public:
     std::vector<PlayerBullet> playerBullets;
     std::vector<Alien> aliens;
 
-    double bulletTimer = 0.0, fireDelay = 0.5;
+    double bulletTimer = 0.0, fireDelay = 0.75;
 
-    GameState() {}
+    GameState() {
+      bulletTimer = fireDelay;
+    }
 
     void DoCollisions(double deltaTime) {
         bulletTimer += deltaTime;
