@@ -49,9 +49,10 @@ public:
 		rotation = glm::rotate(translation, glm::radians(xRot), glm::vec3(1.0f, 0.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(yRot), glm::vec3(0.0f, 1.0f, 0.0f));
 		rotation = glm::rotate(rotation, glm::radians(zRot), glm::vec3(0.0f, 0.0f, 1.0f));
+		scale = glm::scale(rotation, glm::vec3(xScale, yScale, zScale));
 
 		GLint transLocation = glGetUniformLocation(shaderProgram, "trans");
-		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(rotation));
+		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(scale));
 
 		// bind texture here
 		glBindVertexArray(vertArray);

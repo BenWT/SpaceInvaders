@@ -16,7 +16,7 @@ public:
     double bulletTimer = 0.0, fireDelay = 0.75;
 
     GameState() {
-      bulletTimer = fireDelay;
+        bulletTimer = fireDelay;
     }
 
     void DoCollisions(double deltaTime) {
@@ -46,8 +46,13 @@ public:
 
         for (alienIT = aliens.begin(); alienIT < aliens.end();) {
             if (!alienIT->isAlive) {
-                // do some animation stuff
-                alienIT = aliens.erase(alienIT);
+                alienIT->deathAnimTimer += deltaTime;
+                alienIT->Move(0, deltaTime * -0.3f, 0);
+                alienIT->Rotate(deltaTime * -45.0f, deltaTime * -45.0f, deltaTime * -45.0f);
+                alienIT->Scale(deltaTime * -0.45f, deltaTime * -0.45f, deltaTime * -0.45f);
+
+                if (alienIT->deathAnimTimer >= 2.0f) alienIT = aliens.erase(alienIT);
+                else alienIT++;
             } else {
                 alienIT++;
             }

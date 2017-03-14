@@ -195,6 +195,8 @@ void ProcessInput() {
 
 				if (k == SDLK_a) gameState.player.movementInputX = -1;
 				else if (k == SDLK_d) gameState.player.movementInputX = 1;
+
+				if (k == SDLK_SPACE) gameState.PlayerFire();
 			break;
 
 			case SDL_QUIT:
@@ -257,8 +259,8 @@ void GenerateGame() {
 
 	// load all textures
 
-	int columns = 6, rows = 3;
-	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, size = 0.2f;
+	int columns = 8, rows = 4;
+	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, size = 0.25f;
 
 	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
 	gameState.background = *bg;

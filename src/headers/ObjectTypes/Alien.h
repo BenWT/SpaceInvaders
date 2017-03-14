@@ -5,8 +5,10 @@
 
 class Alien : public Plane {
 public:
-	double moveAmount = 0.05f;
+	double moveAmount = 0.18f;
 	bool moveRight = true, isAlive = true;
+
+	double deathAnimTimer = 0.0f;
 
 	Alien(GLfloat xPos, GLfloat yPos, GLfloat size) {
 		this->xPos = xPos;
@@ -26,8 +28,8 @@ public:
 	}
 
 	bool DoMove(double deltaTime) {
-		if (xPos > 0.9f && moveRight) return true;
-		else if (xPos < -0.9f && !moveRight) return true;
+		if (xPos > 1.5f && moveRight) return true;
+		else if (xPos < -1.5f && !moveRight) return true;
 
 		if (moveRight) Move(moveAmount * deltaTime, 0.0f, 0.0f);
 		else Move(-moveAmount * deltaTime, 0.0f, 0.0f);

@@ -7,7 +7,7 @@
 
 class Player : public Plane {
 public:
-	double moveAmount = 0.25f;
+	double moveAmount = 0.8f;
     double movementInputX = 0.0f;
 	std::vector<Plane> bullets;
 
@@ -32,7 +32,7 @@ public:
     void DoMove(double deltaTime) {
         Move(moveAmount * deltaTime * movementInputX, 0.0f, 0.0f);
 
-        if (xPos > 0.9f) xPos = 0.9f;
-        if (xPos < -0.9f) xPos = -0.9f;
+        if (xPos > 1.5f) xPos = 1.5f;
+        if (xPos < -1.5f) xPos = -1.5af;
     }
 };

@@ -10,6 +10,7 @@ add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/headers/Shaders.h
 	src/headers/GameObject.h
+	src/headers/GameState.h
 	src/headers/ObjectTypes/Alien.h
 	src/headers/ObjectTypes/Plane.h
 	src/headers/ObjectTypes/Player.h
