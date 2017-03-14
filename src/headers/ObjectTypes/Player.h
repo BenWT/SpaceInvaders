@@ -33,6 +33,6 @@ public:
         Move(moveAmount * deltaTime * movementInputX, 0.0f, 0.0f);
 
         if (xPos > 1.5f) xPos = 1.5f;
-        if (xPos < -1.5f) xPos = -1.5af;
+        if (xPos < -1.5f) xPos = -1.5f;
     }
 };

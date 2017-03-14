@@ -259,20 +259,20 @@ void GenerateGame() {
 
 	// load all textures
 
-	int columns = 8, rows = 4;
-	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, size = 0.25f;
+	int columns = 11, rows = 5;
+	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, width = 0.25f, height = 0.18, gap = 0.1f;
 
 	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
 	gameState.background = *bg;
 	delete bg;
 
-	Player* p = new Player(0.0f, bottom + (size / 2), size);
+	Player* p = new Player(0.0f, bottom + (height / 2), width, height);
 	gameState.player = *p;
 	delete p;
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
-			Alien* a = new Alien((left + size / 2) + (j * size), (top - size / 2) - (i * size), size);
+			Alien* a = new Alien((left + width / 2 + gap) + (j * width), (top - height / 2) - (i * height), width, height);
 			gameState.aliens.push_back(*a);
 			delete a;
 		}

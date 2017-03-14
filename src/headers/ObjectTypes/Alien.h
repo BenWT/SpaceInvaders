@@ -5,7 +5,7 @@
 
 class Alien : public Plane {
 public:
-	double moveAmount = 0.18f;
+	double moveAmount = 0.05f;
 	bool moveRight = true, isAlive = true;
 
 	double deathAnimTimer = 0.0f;

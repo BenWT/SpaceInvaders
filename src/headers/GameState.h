@@ -13,7 +13,7 @@ public:
     std::vector<PlayerBullet> playerBullets;
     std::vector<Alien> aliens;
 
-    double bulletTimer = 0.0, fireDelay = 0.75;
+    double bulletTimer = 0.0, fireDelay = 0.5;
 
     GameState() {
         bulletTimer = fireDelay;
@@ -45,6 +45,8 @@ public:
         }
 
         for (alienIT = aliens.begin(); alienIT < aliens.end();) {
+            alienIT->moveAmount += deltaTime * 0.005f;
+
             if (!alienIT->isAlive) {
                 alienIT->deathAnimTimer += deltaTime;
                 alienIT->Move(0, deltaTime * -0.3f, 0);
