@@ -4,10 +4,12 @@
 
 class Plane : public GameObject {
 private:
-	void AddCoord(GLfloat x, GLfloat y) {
+	void AddCoord(GLfloat x, GLfloat y, GLfloat uvx, GLfloat uvy) {
 		vertices.push_back(x);
 		vertices.push_back(y);
 		vertices.push_back(0);
+		vertices.push_back(uvx);
+		vertices.push_back(uvy);
 	}
 public:
 	GLfloat w, h;
@@ -23,10 +25,10 @@ public:
 	}
 
 	void SetPlane() {
-		AddCoord(0.0f - (w / 2), 0.0f + (h / 2)); // Top Left
-		AddCoord(0.0f + (w / 2), 0.0f + (h / 2)); // Top Right
-		AddCoord(0.0f - (w / 2), 0.0f - (h / 2)); // Bottom Left
-		AddCoord(0.0f + (w / 2), 0.0f - (h / 2)); // Bottom Right
+		AddCoord(0.0f - (w / 2), 0.0f + (h / 2), 0.0f, 1.0f); // Top Left
+		AddCoord(0.0f + (w / 2), 0.0f + (h / 2), 1.0f, 1.0f); // Top Right
+		AddCoord(0.0f - (w / 2), 0.0f - (h / 2), 0.0f, 0.0f); // Bottom Left
+		AddCoord(0.0f + (w / 2), 0.0f - (h / 2), 1.0f, 0.0f); // Bottom Right
 
 		indices.push_back(2);
 		indices.push_back(0);

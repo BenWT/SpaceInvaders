@@ -13,10 +13,34 @@ public:
     std::vector<PlayerBullet> playerBullets;
     std::vector<Alien> aliens;
 
+    SDL_Surface* images[2];
+    GLuint textures[2];
+
     double bulletTimer = 0.0, fireDelay = 0.5;
 
     GameState() {
         bulletTimer = fireDelay;
+    }
+
+    void GenerateTextures() {
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    	glGenTextures(2, textures);
+
+    	glBindTexture(GL_TEXTURE_2D, textures[0]);
+    	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[0]->w, images[0]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[0]->pixels);
+    	glGenerateMipmap(GL_TEXTURE_2D);
+    	glBindTexture(GL_TEXTURE_2D, 0);
+    	SDL_FreeSurface(images[0]);
+
+        glBindTexture(GL_TEXTURE_2D, textures[1]);
+    	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[1]->w, images[1]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[1]->pixels);
+    	glGenerateMipmap(GL_TEXTURE_2D);
+    	glBindTexture(GL_TEXTURE_2D, 0);
+    	SDL_FreeSurface(images[1]);
     }
 
     void DoCollisions(double deltaTime) {

@@ -1,18 +1,23 @@
 const GLchar *vertShaderSource[] = {
-	"#version 330 core\n"
+	"#version 440 core\n"
 	"layout(location=0) in vec3 position;\n"
+	"layout (location = 1) in vec2 texCoord;\n"
+	"out vec2 TexCoord;\n"
 	"uniform mat4 trans;\n"
 	"void main()\n"
 	"{\n"
 		"gl_Position = trans * vec4(position.x, position.y, position.z, 1.0);\n"
+		"TexCoord = vec2(texCoord.x, 1.0f - texCoord.y);\n"
 	"}\n\0"
 };
 
 const GLchar *fragShaderSource[] = {
-	"#version 330 core\n"
+	"#version 440 core\n"
+	"in vec2 TexCoord;\n"
 	"out vec4 color;\n"
+	"uniform sampler2D Texture;\n"
 	"void main()\n"
 	"{\n"
-		"color = vec4(0.85f, 0.85f, 0.85f, 1.0f);\n"
+		"color = texture(Texture, TexCoord);\n"
 	"}\n\0"
 };

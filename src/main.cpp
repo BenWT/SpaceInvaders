@@ -145,6 +145,14 @@ int main(int argc, char *argv[]) {
 	viewMat = glm::translate(viewMat, glm::vec3(2.0f, 1.5f, 0.0f));
 
 	gameState = GameState();
+
+	SDL_Surface* image0 = IMG_Load("assets/test.png");
+	SDL_Surface* image1 = IMG_Load("assets/test2.png");
+	gameState.images[0] = image0;
+	gameState.images[1] = image1;
+
+	gameState.GenerateTextures();
+
 	GenerateGame();
 
 	// Game Loop
@@ -237,17 +245,17 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 
 	glUseProgram(shaderProgram);
 
-	//background.Render(shaderProgram, projectionMat, viewMat);
-	gameState.player.Render(shaderProgram, projectionMat, viewMat);
+	gameState.background.Render(shaderProgram, projectionMat, viewMat, gameState.textures[0]);
+	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
 
 	vector<PlayerBullet>::iterator pBulletIT;
 	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
-		pBulletIT->Render(shaderProgram, projectionMat, viewMat);
+		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
 	}
 
 	vector<Alien>::iterator alienIT;
 	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-		alienIT->Render(shaderProgram, projectionMat, viewMat);
+		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
 	}
 
 	SDL_GL_SwapWindow(window);
