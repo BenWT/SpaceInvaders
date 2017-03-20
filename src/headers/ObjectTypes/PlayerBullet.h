@@ -28,7 +28,7 @@ public:
 	}
 
     void DoMove(double deltaTime) {
-        Move(0.0f, moveAmount * deltaTime, 0.0f);
+        position.Move(0.0f, moveAmount * deltaTime, 0.0f);
 
         if (yPos > 1.5f) shouldDestroy = true;
     }

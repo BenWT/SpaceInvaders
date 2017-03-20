@@ -16,6 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "headers/Shaders.h"
+#include "headers/Vector3.h"
 #include "headers/GameObject.h"
 #include "headers/GameState.h"
 #include "headers/ObjectTypes/Plane.h"
@@ -38,7 +39,7 @@ GameState gameState;
 void ProcessInput();
 void Update(double deltaTime);
 void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat);
-void GenerateGame();
+void GenerateGame(bool firstGenerate);
 high_resolution_clock::time_point NowTime() {
 	return chrono::high_resolution_clock::now();
 }
@@ -153,7 +154,7 @@ int main(int argc, char *argv[]) {
 
 	gameState.GenerateTextures();
 
-	GenerateGame();
+	GenerateGame(true);
 
 	// Game Loop
 	running = true;
@@ -178,7 +179,6 @@ int main(int argc, char *argv[]) {
 }
 
 void ProcessInput() {
-
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		SDL_Keycode k = event.key.keysym.sym;
@@ -217,25 +217,39 @@ void ProcessInput() {
 
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
+	float endgameCounter = 0.0f;
 
-	gameState.DoCollisions(deltaTime);
+	if (gameState.aliens.size() > 0) {
+		gameState.DoCollisions(deltaTime);
 
-	gameState.player.DoMove(deltaTime);
+		gameState.player.DoMove(deltaTime);
 
-	vector<PlayerBullet>::iterator pBulletIT;
-	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
-		pBulletIT->DoMove(deltaTime);
-	}
-
-	vector<Alien>::iterator alienIT;
-	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-		// TODO alien death animation here
-		if (alienIT->DoMove(deltaTime)) shouldMoveDown = true;
-	}
-	if (shouldMoveDown) {
-		for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-			alienIT->MoveDown();
+		vector<PlayerBullet>::iterator pBulletIT;
+		for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
+			pBulletIT->DoMove(deltaTime);
 		}
+
+		vector<Alien>::iterator alienIT;
+		for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
+			// TODO alien death animation here
+			if (alienIT->DoMove(deltaTime)) shouldMoveDown = true;
+		}
+		if (shouldMoveDown) {
+			for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
+				alienIT->MoveDown();
+			}
+		}
+	} else {
+		if (endgameCounter > 2.0) {
+			GenerateGame(false);
+			endgameCounter = 0.0;
+			// TODO reset score
+		} else {
+			// do animate
+			gameState.player.Move(0, asd, 0);
+		}
+
+		endgameCounter += deltaTime;
 	}
 }
 
@@ -261,22 +275,22 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 	SDL_GL_SwapWindow(window);
 }
 
-void GenerateGame() {
+void GenerateGame(bool firstGenerate) {
 	gameState.aliens.clear();
 	gameState.playerBullets.clear();
-
-	// load all textures
 
 	int columns = 11, rows = 5;
 	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, width = 0.25f, height = 0.18, gap = 0.1f;
 
-	Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
-	gameState.background = *bg;
-	delete bg;
+	if (firstGenerate) {
+		Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
+		gameState.background = *bg;
+		delete bg;
 
-	Player* p = new Player(0.0f, bottom + (height / 2), width, height);
-	gameState.player = *p;
-	delete p;
+		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
+		gameState.player = *p;
+		delete p;
+	}
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {

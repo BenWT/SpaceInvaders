@@ -2,17 +2,17 @@
 #include <iostream>
 #include <vector>
 #include <iterator>
+#include "Vector3.h"
 
 class GameObject {
-public:
-	glm::mat4 translation, rotation, scale;
-	GLfloat xPos = 0.0f, yPos = 0.0f, zPos = 0.0f;
-	GLfloat xRot = 0.0f, yRot = 0.0f, zRot = 0.0f;
-	GLfloat xScale = 1.0f, yScale = 1.0f, zScale = 1.0f;
+private:
+	glm::mat4 _trans, _rot, _scale;
 	GLuint vertBuffer, vertArray, elementBuffer;
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
 	bool shouldBuffer = true;
+public:
+	Vector3 position(0.0f), rotation(0.0f), scale(1.0f);
 
 	GameObject() {}
 	GameObject(std::vector<GLfloat> vertices, std::vector<GLuint> indices) {
@@ -48,14 +48,14 @@ public:
 	void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat, GLuint &texture) {
 		if (shouldBuffer) BindBuffers();
 
-		translation = glm::translate(projectionMat * viewMat, glm::vec3(xPos, yPos, zPos));
-		rotation = glm::rotate(translation, glm::radians(xRot), glm::vec3(1.0f, 0.0f, 0.0f));
-		rotation = glm::rotate(rotation, glm::radians(yRot), glm::vec3(0.0f, 1.0f, 0.0f));
-		rotation = glm::rotate(rotation, glm::radians(zRot), glm::vec3(0.0f, 0.0f, 1.0f));
-		scale = glm::scale(rotation, glm::vec3(xScale, yScale, zScale));
+		_trans = glm::translate(projectionMat * viewMat, glm::vec3(position.x, position.y, position.z));
+		_rot = glm::rotate(_trans, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		_rot = glm::rotate(_rot, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		_rot = glm::rotate(_rot, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		_scale = glm::scale(_rot, glm::vec3(scale.x, scale.y, scale.z));
 
 		GLint transLocation = glGetUniformLocation(shaderProgram, "trans");
-		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(scale));
+		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(_scale));
 
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glBindVertexArray(vertArray);
@@ -70,6 +70,11 @@ public:
 		xPos += x;
 		yPos += y;
 		zPos += z;
+	}
+	void SetPosition(GLfloat x, GLfloat y, GLfloat z) {
+		xPos = x;
+		yPos = y;
+		zPos = z;
 	}
 
 	void Rotate(GLfloat x, GLfloat y, GLfloat z) {

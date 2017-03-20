@@ -73,9 +73,9 @@ public:
 
             if (!alienIT->isAlive) {
                 alienIT->deathAnimTimer += deltaTime;
-                alienIT->Move(0, deltaTime * -0.3f, 0);
-                alienIT->Rotate(deltaTime * -45.0f, deltaTime * -45.0f, deltaTime * -45.0f);
-                alienIT->Scale(deltaTime * -0.45f, deltaTime * -0.45f, deltaTime * -0.45f);
+                alienIT->position.Move(0, deltaTime * -0.3f, 0);
+                alienIT->rotation.Move(deltaTime * -45.0f, deltaTime * -45.0f, deltaTime * -45.0f);
+                alienIT->scale.Move(deltaTime * -0.45f, deltaTime * -0.45f, deltaTime * -0.45f);
 
                 if (alienIT->deathAnimTimer >= 2.0f) alienIT = aliens.erase(alienIT);
                 else alienIT++;

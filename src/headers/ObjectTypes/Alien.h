@@ -31,14 +31,14 @@ public:
 		if (xPos > 2.0f - (w / 2) && moveRight) return true;
 		else if (xPos < -2.0f + (w / 2) && !moveRight) return true;
 
-		if (moveRight) Move(moveAmount * deltaTime, 0.0f, 0.0f);
-		else Move(-moveAmount * deltaTime, 0.0f, 0.0f);
+		if (moveRight) position.Move(moveAmount * deltaTime, 0.0f, 0.0f);
+		else position.Move(-moveAmount * deltaTime, 0.0f, 0.0f);
 
 		return false;
 	}
 
 	void MoveDown() {
-		Move(0, -h, 0);
+		position.Move(0, -h, 0);
 		moveRight = !moveRight;
 	}
 };
