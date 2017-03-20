@@ -9,6 +9,7 @@ conan_basic_setup()
 add_executable(${PROJECT_NAME}
 	src/main.cpp
 	src/headers/Shaders.h
+	src/headers/Vector3.h
 	src/headers/GameObject.h
 	src/headers/GameState.h
 	src/headers/ObjectTypes/Alien.h

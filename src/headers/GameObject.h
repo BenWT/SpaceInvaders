@@ -8,11 +8,14 @@ class GameObject {
 private:
 	glm::mat4 _trans, _rot, _scale;
 	GLuint vertBuffer, vertArray, elementBuffer;
-	std::vector<GLfloat> vertices;
-	std::vector<GLuint> indices;
 	bool shouldBuffer = true;
 public:
-	Vector3 position(0.0f), rotation(0.0f), scale(1.0f);
+	Vector3 position = Vector3(0.0f);
+	Vector3 rotation = Vector3(0.0f);
+	Vector3 scale = Vector3(1.0f);
+
+	std::vector<GLfloat> vertices;
+	std::vector<GLuint> indices;
 
 	GameObject() {}
 	GameObject(std::vector<GLfloat> vertices, std::vector<GLuint> indices) {
@@ -63,29 +66,5 @@ public:
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0); // GL_TRIANGLES || GL_LINES
 		glBindVertexArray(0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-
-	// TODO implement transformations
-	void Move(GLfloat x, GLfloat y, GLfloat z) {
-		xPos += x;
-		yPos += y;
-		zPos += z;
-	}
-	void SetPosition(GLfloat x, GLfloat y, GLfloat z) {
-		xPos = x;
-		yPos = y;
-		zPos = z;
-	}
-
-	void Rotate(GLfloat x, GLfloat y, GLfloat z) {
-		xRot += x;
-		yRot += y;
-		zRot += z;
-	}
-
-	void Scale(GLfloat x, GLfloat y, GLfloat z) {
-		xScale += x;
-		yScale += y;
-		zScale += z;
 	}
 };

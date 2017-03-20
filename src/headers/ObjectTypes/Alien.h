@@ -10,17 +10,17 @@ public:
 
 	double deathAnimTimer = 0.0f;
 
-	Alien(GLfloat xPos, GLfloat yPos, GLfloat size) {
-		this->xPos = xPos;
-		this->yPos = yPos;
+	Alien(GLfloat x, GLfloat y, GLfloat size) {
+		this->position.x = x;
+		this->position.y = y;
 		this->w = size;
 		this->h = size;
 
 		SetPlane();
 	}
-	Alien(GLfloat xPos, GLfloat yPos, GLfloat w, GLfloat h) {
-		this->xPos = xPos;
-		this->yPos = yPos;
+	Alien(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+		this->position.x = x;
+		this->position.y = y;
 		this->w = w;
 		this->h = h;
 
@@ -28,8 +28,8 @@ public:
 	}
 
 	bool DoMove(double deltaTime) {
-		if (xPos > 2.0f - (w / 2) && moveRight) return true;
-		else if (xPos < -2.0f + (w / 2) && !moveRight) return true;
+		if (position.x > 2.0f - (w / 2) && moveRight) return true;
+		else if (position.x < -2.0f + (w / 2) && !moveRight) return true;
 
 		if (moveRight) position.Move(moveAmount * deltaTime, 0.0f, 0.0f);
 		else position.Move(-moveAmount * deltaTime, 0.0f, 0.0f);

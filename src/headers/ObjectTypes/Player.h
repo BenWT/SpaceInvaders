@@ -12,17 +12,17 @@ public:
 	std::vector<Plane> bullets;
 
     Player() {}
-    Player(GLfloat xPos, GLfloat yPos, GLfloat size) {
-		this->xPos = xPos;
-		this->yPos = yPos;
+    Player(GLfloat x, GLfloat y, GLfloat size) {
+		this->position.x = x;
+		this->position.y = y;
 		this->w = size;
 		this->h = size;
 
 		SetPlane();
 	}
-	Player(GLfloat xPos, GLfloat yPos, GLfloat w, GLfloat h) {
-		this->xPos = xPos;
-		this->yPos = yPos;
+	Player(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+		this->position.x = x;
+		this->position.y = y;
 		this->w = w;
 		this->h = h;
 
@@ -32,7 +32,7 @@ public:
     void DoMove(double deltaTime) {
         position.Move(moveAmount * deltaTime * movementInputX, 0.0f, 0.0f);
 
-        if (xPos > 2.0f - (w / 2)) xPos = 2.0f - (w / 2);
-        if (xPos < -2.0f + (w / 2)) xPos = -2.0f + (w / 2);
+        if (position.x > 2.0f - (w / 2)) position.x = 2.0f - (w / 2);
+        if (position.x < -2.0f + (w / 2)) position.x = -2.0f + (w / 2);
     }
 };

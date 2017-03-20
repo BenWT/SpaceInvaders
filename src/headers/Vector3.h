@@ -1,7 +1,8 @@
 #pragma once
 
 class Vector3 {
-    public GLfloat x, y, z;
+public:
+    GLfloat x, y, z;
 
     Vector3() {
         this->x = 0.0f;

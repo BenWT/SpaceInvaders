@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <iterator>
+#include "Vector3.h"
 #include "ObjectTypes/Alien.h"
 #include "ObjectTypes/Player.h"
 #include "ObjectTypes/PlayerBullet.h"
@@ -16,7 +17,8 @@ public:
     SDL_Surface* images[2];
     GLuint textures[2];
 
-    double bulletTimer = 0.0, fireDelay = 0.5;
+    double bulletTimer = 0.0, fireDelay = 0.5, endgameCounter = 0.0;
+    bool isEndgame = false;
 
     GameState() {
         bulletTimer = fireDelay;
@@ -56,7 +58,7 @@ public:
                 if (pBulletIT->shouldDestroy) {
                     shouldRemove = true;
                     break;
-                } else if (alienIT->CheckCollision(pBulletIT->xPos, pBulletIT->yPos) && alienIT->isAlive) {
+                } else if (alienIT->CheckCollision(pBulletIT->position.x, pBulletIT->position.y) && alienIT->isAlive) {
                     BulletImpact();
                     alienIT->isAlive = false;
                     shouldRemove = true;
@@ -87,7 +89,7 @@ public:
 
     void PlayerFire() {
         if (bulletTimer >= fireDelay) {
-            PlayerBullet* b = new PlayerBullet(player.xPos, player.yPos, 0.025f, 0.12f);
+            PlayerBullet* b = new PlayerBullet(player.position.x, player.position.y, 0.025f, 0.12f);
             playerBullets.push_back(*b);
             delete b;
 

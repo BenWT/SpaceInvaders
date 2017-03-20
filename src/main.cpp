@@ -217,9 +217,8 @@ void ProcessInput() {
 
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
-	float endgameCounter = 0.0f;
 
-	if (gameState.aliens.size() > 0) {
+	if (gameState.aliens.size() > 0 && !gameState.isEndgame) {
 		gameState.DoCollisions(deltaTime);
 
 		gameState.player.DoMove(deltaTime);
@@ -240,16 +239,27 @@ void Update(double deltaTime) {
 			}
 		}
 	} else {
-		if (endgameCounter > 2.0) {
-			GenerateGame(false);
-			endgameCounter = 0.0;
-			// TODO reset score
+		if (!gameState.isEndgame) gameState.isEndgame = true;
+
+		if (gameState.endgameCounter > 3.0) {
+			gameState.isEndgame = false;
+			gameState.endgameCounter = 0.0;
+		} else if (gameState.endgameCounter > 2.0) {
+			if (!gameState.aliens.size() > 0) GenerateGame(false);
+
+			vector<Alien>::iterator alienIT;
+			for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
+				alienIT->position.y -= 1.5f * deltaTime;
+			}
 		} else {
 			// do animate
-			gameState.player.Move(0, asd, 0);
+			//gameState.player.Move(0, asd, 0);
+			if (gameState.playerBullets.size() > 0) gameState.playerBullets.clear();
+			gameState.player.position.y += 1.5f * deltaTime;
 		}
 
-		endgameCounter += deltaTime;
+		gameState.endgameCounter += deltaTime;
+		cout << gameState.endgameCounter << endl;
 	}
 }
 
@@ -279,7 +289,7 @@ void GenerateGame(bool firstGenerate) {
 	gameState.aliens.clear();
 	gameState.playerBullets.clear();
 
-	int columns = 11, rows = 5;
+	int columns = 11, rows = 1;
 	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, width = 0.25f, height = 0.18, gap = 0.1f;
 
 	if (firstGenerate) {
@@ -290,11 +300,14 @@ void GenerateGame(bool firstGenerate) {
 		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
 		gameState.player = *p;
 		delete p;
+	} else {
+		gameState.player.position.y = bottom + (height / 2);
 	}
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
 			Alien* a = new Alien((left + width / 2 + gap) + (j * width), (top - height / 2) - (i * height), width, height);
+			if (!firstGenerate) a->position.y += 1.5f;
 			gameState.aliens.push_back(*a);
 			delete a;
 		}

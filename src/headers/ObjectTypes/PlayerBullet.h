@@ -10,17 +10,17 @@ public:
     bool shouldDestroy = false;
 
     PlayerBullet() {}
-    PlayerBullet(GLfloat xPos, GLfloat yPos, GLfloat size) {
-		this->xPos = xPos;
-		this->yPos = yPos;
+    PlayerBullet(GLfloat x, GLfloat y, GLfloat size) {
+		this->position.x = x;
+		this->position.y= y;
 		this->w = size;
 		this->h = size;
 
 		SetPlane();
 	}
-	PlayerBullet(GLfloat xPos, GLfloat yPos, GLfloat w, GLfloat h) {
-		this->xPos = xPos;
-		this->yPos = yPos;
+	PlayerBullet(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
+		this->position.x = x;
+		this->position.y= y;
 		this->w = w;
 		this->h = h;
 
@@ -30,6 +30,6 @@ public:
     void DoMove(double deltaTime) {
         position.Move(0.0f, moveAmount * deltaTime, 0.0f);
 
-        if (yPos > 1.5f) shouldDestroy = true;
+        if (position.y > 1.5f) shouldDestroy = true;
     }
 };
