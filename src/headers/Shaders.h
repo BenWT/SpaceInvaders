@@ -4,10 +4,11 @@ const GLchar *vertShaderSource[] = {
 	"layout (location = 1) in vec2 texCoord;\n"
 	"out vec2 TexCoord;\n"
 	"uniform mat4 trans;\n"
+	"uniform vec2 uvoff;\n"
 	"void main()\n"
 	"{\n"
 		"gl_Position = trans * vec4(position.x, position.y, position.z, 1.0);\n"
-		"TexCoord = vec2(texCoord.x, 1.0f - texCoord.y);\n"
+		"TexCoord = vec2(texCoord.x + uvoff.x, 1.0f - texCoord.y + uvoff.y);\n"
 	"}\n\0"
 };
 

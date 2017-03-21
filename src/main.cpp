@@ -218,6 +218,8 @@ void ProcessInput() {
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
 
+	gameState.background.uvoff.y += deltaTime * 0.05f;
+
 	if (gameState.aliens.size() > 0 && !gameState.isEndgame) {
 		gameState.DoCollisions(deltaTime);
 
@@ -253,13 +255,11 @@ void Update(double deltaTime) {
 			}
 		} else {
 			// do animate
-			//gameState.player.Move(0, asd, 0);
 			if (gameState.playerBullets.size() > 0) gameState.playerBullets.clear();
 			gameState.player.position.y += 1.5f * deltaTime;
 		}
 
 		gameState.endgameCounter += deltaTime;
-		cout << gameState.endgameCounter << endl;
 	}
 }
 

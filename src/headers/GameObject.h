@@ -13,6 +13,7 @@ public:
 	Vector3 position = Vector3(0.0f);
 	Vector3 rotation = Vector3(0.0f);
 	Vector3 scale = Vector3(1.0f);
+	Vector3 uvoff = Vector3(0.0);
 
 	std::vector<GLfloat> vertices;
 	std::vector<GLuint> indices;
@@ -59,6 +60,9 @@ public:
 
 		GLint transLocation = glGetUniformLocation(shaderProgram, "trans");
 		glUniformMatrix4fv(transLocation, 1, GL_FALSE, glm::value_ptr(_scale));
+
+		GLint uvLocation = glGetUniformLocation(shaderProgram, "uvoff");
+		glUniform2fv(uvLocation, 1, glm::value_ptr(glm::vec2(uvoff.x, uvoff.y)));
 
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glBindVertexArray(vertArray);
