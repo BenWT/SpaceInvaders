@@ -8,6 +8,7 @@
 #include <iterator>
 #include <chrono>
 #include <cmath>
+#include <random>
 #include <GL/glew.h>
 #include "SDL.h"
 #include "SDL_image.h"
@@ -22,6 +23,8 @@
 #include "headers/ObjectTypes/Plane.h"
 #include "headers/ObjectTypes/Player.h"
 #include "headers/ObjectTypes/Alien.h"
+#include "headers/ObjectTypes/PlayerBullet.h"
+#include "headers/ObjectTypes/EnemyBullet.h"
 
 #define PI 3.14159265
 
@@ -45,6 +48,11 @@ high_resolution_clock::time_point NowTime() {
 }
 double TimeSinceLastFrame(high_resolution_clock::time_point frameTime) {
 	return (duration_cast<microseconds>(NowTime() - frameTime).count()) / 1000000.0;
+}
+void toggleFullScreen() {
+	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+	bool toggle = SDL_GetWindowFlags(window) & FullscreenFlag;
+	SDL_SetWindowFullscreen(window, toggle ? 0 : FullscreenFlag);
 }
 void SizeWindow() {
 	int w, h, desiredW;
@@ -147,10 +155,16 @@ int main(int argc, char *argv[]) {
 
 	gameState = GameState();
 
-	SDL_Surface* image0 = IMG_Load("assets/test.png");
-	SDL_Surface* image1 = IMG_Load("assets/test2.png");
+	SDL_Surface* image0 = IMG_Load("assets/background.png");
+	SDL_Surface* image1 = IMG_Load("assets/asteroids.png");
+	SDL_Surface* image2 = IMG_Load("assets/player.png");
+	SDL_Surface* image3 = IMG_Load("assets/alien.png");
+	SDL_Surface* image4 = IMG_Load("assets/player.png");
 	gameState.images[0] = image0;
 	gameState.images[1] = image1;
+	gameState.images[2] = image2;
+	gameState.images[3] = image3;
+	gameState.images[4] = image4;
 
 	gameState.GenerateTextures();
 
@@ -191,6 +205,7 @@ void ProcessInput() {
 			break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (event.button.button == SDL_BUTTON_LEFT) gameState.PlayerFire();
+				if (event.button.button == SDL_BUTTON_RIGHT) gameState.EnemyFire(0);
 			break;
 
 			// TODO Make not janky
@@ -200,6 +215,7 @@ void ProcessInput() {
 
 			case SDL_KEYDOWN:
 				if (k == SDLK_ESCAPE) running = false;
+				if (k == SDLK_RETURN) toggleFullScreen();
 
 				if (k == SDLK_a) gameState.player.movementInputX = -1;
 				else if (k == SDLK_d) gameState.player.movementInputX = 1;
@@ -218,21 +234,29 @@ void ProcessInput() {
 void Update(double deltaTime) {
 	bool shouldMoveDown = false;
 
-	gameState.background.uvoff.y += deltaTime * 0.05f;
+	gameState.background.uvoff.y -= deltaTime * 0.005f;
+	gameState.asteroids.uvoff.x += deltaTime * 0.005f;
+	gameState.asteroids.uvoff.y -= deltaTime * 0.05f;
 
 	if (gameState.aliens.size() > 0 && !gameState.isEndgame) {
-		gameState.DoCollisions(deltaTime);
+		if (gameState.DoCollisions(deltaTime)) running = false;
 
 		gameState.player.DoMove(deltaTime);
 
+		int v = rand() % 1200;
+		if (v < gameState.aliens.size()) gameState.EnemyFire(v);
+
 		vector<PlayerBullet>::iterator pBulletIT;
+		vector<EnemyBullet>::iterator eBulletIT;
 		for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
 			pBulletIT->DoMove(deltaTime);
+		}
+		for (eBulletIT = gameState.enemyBullets.begin(); eBulletIT < gameState.enemyBullets.end(); eBulletIT++) {
+			eBulletIT->DoMove(deltaTime);
 		}
 
 		vector<Alien>::iterator alienIT;
 		for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-			// TODO alien death animation here
 			if (alienIT->DoMove(deltaTime)) shouldMoveDown = true;
 		}
 		if (shouldMoveDown) {
@@ -270,16 +294,21 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 	glUseProgram(shaderProgram);
 
 	gameState.background.Render(shaderProgram, projectionMat, viewMat, gameState.textures[0]);
-	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
+	gameState.asteroids.Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
+	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[2]);
 
 	vector<PlayerBullet>::iterator pBulletIT;
+	vector<EnemyBullet>::iterator eBulletIT;
 	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
-		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
+		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[4]);
+	}
+	for (eBulletIT = gameState.enemyBullets.begin(); eBulletIT < gameState.enemyBullets.end(); eBulletIT++) {
+		eBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[4]);
 	}
 
 	vector<Alien>::iterator alienIT;
 	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
+		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[3]);
 	}
 
 	SDL_GL_SwapWindow(window);
@@ -296,6 +325,10 @@ void GenerateGame(bool firstGenerate) {
 		Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
 		gameState.background = *bg;
 		delete bg;
+
+		Plane* asteroids = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
+		gameState.asteroids = *asteroids;
+		delete asteroids;
 
 		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
 		gameState.player = *p;

@@ -5,8 +5,7 @@
 
 class PlayerBullet : public Plane {
 public:
-	double moveAmount = 1.0f;
-    double movementInputX = 0.0f;
+	double moveAmount = 2.5f;
     bool shouldDestroy = false;
 
     PlayerBullet() {}

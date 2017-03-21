@@ -6,16 +6,19 @@
 #include "ObjectTypes/Alien.h"
 #include "ObjectTypes/Player.h"
 #include "ObjectTypes/PlayerBullet.h"
+#include "ObjectTypes/EnemyBullet.h"
 
 class GameState {
 public:
     Plane background;
+    Plane asteroids;
     Player player;
     std::vector<PlayerBullet> playerBullets;
+    std::vector<EnemyBullet> enemyBullets;
     std::vector<Alien> aliens;
 
-    SDL_Surface* images[2];
-    GLuint textures[2];
+    SDL_Surface* images[5];
+    GLuint textures[5];
 
     double bulletTimer = 0.0, fireDelay = 0.5, endgameCounter = 0.0;
     bool isEndgame = false;
@@ -30,26 +33,26 @@ public:
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    	glGenTextures(2, textures);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
 
-    	glBindTexture(GL_TEXTURE_2D, textures[0]);
-    	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[0]->w, images[0]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[0]->pixels);
-    	glGenerateMipmap(GL_TEXTURE_2D);
-    	glBindTexture(GL_TEXTURE_2D, 0);
-    	SDL_FreeSurface(images[0]);
+    	glGenTextures(5, textures);
 
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-    	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[1]->w, images[1]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[1]->pixels);
-    	glGenerateMipmap(GL_TEXTURE_2D);
-    	glBindTexture(GL_TEXTURE_2D, 0);
-    	SDL_FreeSurface(images[1]);
+        for (int i = 0; i < 5; i++) {
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+        	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[i]->w, images[i]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]->pixels);
+        	glGenerateMipmap(GL_TEXTURE_2D);
+        	glBindTexture(GL_TEXTURE_2D, 0);
+        	SDL_FreeSurface(images[i]);
+        }
     }
 
-    void DoCollisions(double deltaTime) {
+    bool DoCollisions(double deltaTime) {
         bulletTimer += deltaTime;
 
         std::vector<Alien>::iterator alienIT;
-        std::vector<PlayerBullet>::iterator pBulletIT = playerBullets.begin();
+        std::vector<PlayerBullet>::iterator pBulletIT;
+        std::vector<EnemyBullet>::iterator eBulletIT;
 
         for (pBulletIT = playerBullets.begin(); pBulletIT < playerBullets.end();) {
             bool shouldRemove = false;
@@ -69,10 +72,7 @@ public:
             if (shouldRemove) pBulletIT = playerBullets.erase(pBulletIT);
             else pBulletIT++;
         }
-
         for (alienIT = aliens.begin(); alienIT < aliens.end();) {
-            alienIT->moveAmount += deltaTime * 0.005f;
-
             if (!alienIT->isAlive) {
                 alienIT->deathAnimTimer += deltaTime;
                 alienIT->position.Move(0, deltaTime * -0.3f, 0);
@@ -85,6 +85,18 @@ public:
                 alienIT++;
             }
         }
+
+        for (eBulletIT = enemyBullets.begin(); eBulletIT < enemyBullets.end();) {
+            // TODO destroy walls here
+            if (player.CheckCollision(eBulletIT->position.x, eBulletIT->position.y)) {
+                std::cout << "player" << std::endl;
+                return true;
+            }
+
+            if (eBulletIT->shouldDestroy) eBulletIT = enemyBullets.erase(eBulletIT);
+            else eBulletIT++;
+        }
+        return false;
     }
 
     void PlayerFire() {
@@ -95,6 +107,12 @@ public:
 
             bulletTimer = 0.0;
         }
+    }
+
+    void EnemyFire(int i) {
+        EnemyBullet* b = new EnemyBullet(aliens[i].position.x, aliens[i].position.y, 0.025f, 0.12f);
+        enemyBullets.push_back(*b);
+        delete b;
     }
 
     void BulletImpact() {
