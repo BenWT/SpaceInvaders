@@ -12,15 +12,17 @@ class GameState {
 public:
     Plane background;
     Plane asteroids;
+    Plane scoreText;
     Player player;
     int playerLives = 3, playerScore = 0;
     std::vector<Plane> playerLifeIndicators;
+    std::vector<Plane> playerScoreIndicators;
     std::vector<PlayerBullet> playerBullets;
     std::vector<EnemyBullet> enemyBullets;
     std::vector<Alien> aliens;
 
-    SDL_Surface* images[5];
-    GLuint textures[5];
+    SDL_Surface* images[16];
+    GLuint textures[16];
 
     double bulletTimer = 0.0, fireDelay = 0.5, endgameCounter = 0.0;
     bool isEndgame = false;
@@ -38,9 +40,9 @@ public:
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
 
-    	glGenTextures(5, textures);
+    	glGenTextures(16, textures);
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 16; i++) {
             glBindTexture(GL_TEXTURE_2D, textures[i]);
         	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[i]->w, images[i]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]->pixels);
         	glGenerateMipmap(GL_TEXTURE_2D);

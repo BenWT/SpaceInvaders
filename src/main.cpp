@@ -9,6 +9,7 @@
 #include <chrono>
 #include <cmath>
 #include <random>
+#include <string>
 #include <GL/glew.h>
 #include "SDL.h"
 #include "SDL_image.h"
@@ -155,16 +156,24 @@ int main(int argc, char *argv[]) {
 
 	gameState = GameState();
 
+	for (int i = 0; i < 10; i++) {
+		string s = "assets/numbers/" + to_string(i) + ".png";
+		SDL_Surface* num = IMG_Load(s.c_str());
+		gameState.images[i] = num;
+	}
+
 	SDL_Surface* image0 = IMG_Load("assets/background.png");
 	SDL_Surface* image1 = IMG_Load("assets/asteroids.png");
 	SDL_Surface* image2 = IMG_Load("assets/player.png");
 	SDL_Surface* image3 = IMG_Load("assets/alien.png");
 	SDL_Surface* image4 = IMG_Load("assets/player.png");
-	gameState.images[0] = image0;
-	gameState.images[1] = image1;
-	gameState.images[2] = image2;
-	gameState.images[3] = image3;
-	gameState.images[4] = image4;
+	SDL_Surface* image5 = IMG_Load("assets/numbers/score.png");
+	gameState.images[10] = image0;
+	gameState.images[11] = image1;
+	gameState.images[12] = image2;
+	gameState.images[13] = image3;
+	gameState.images[14] = image4;
+	gameState.images[15] = image5;
 
 	gameState.GenerateTextures();
 
@@ -293,28 +302,57 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 
 	glUseProgram(shaderProgram);
 
-	gameState.background.Render(shaderProgram, projectionMat, viewMat, gameState.textures[0]);
-	gameState.asteroids.Render(shaderProgram, projectionMat, viewMat, gameState.textures[1]);
-	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[2]);
+	gameState.background.Render(shaderProgram, projectionMat, viewMat, gameState.textures[10]);
+	gameState.asteroids.Render(shaderProgram, projectionMat, viewMat, gameState.textures[11]);
+	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]);
 
 	vector<PlayerBullet>::iterator pBulletIT;
 	vector<EnemyBullet>::iterator eBulletIT;
 	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
-		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[4]);
+		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
 	}
 	for (eBulletIT = gameState.enemyBullets.begin(); eBulletIT < gameState.enemyBullets.end(); eBulletIT++) {
-		eBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[4]);
+		eBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
 	}
 
 	vector<Alien>::iterator alienIT;
 	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[3]);
+		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[13]);
 	}
 
 	vector<Plane>::iterator lifeIT;
 	for (lifeIT = gameState.playerLifeIndicators.begin(); lifeIT < gameState.playerLifeIndicators.end(); lifeIT++) {
-		lifeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[2]);
+		lifeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]);
 	}
+
+
+	int n = gameState.playerScore, i = 0;
+	if (n == 0) {
+		if (gameState.playerScoreIndicators.size() == 0) {
+			Plane* p = new Plane(1.8, 1.4, 0.1, 0.1);
+			gameState.playerScoreIndicators.push_back(*p);
+			delete p;
+		}
+
+		gameState.playerScoreIndicators[0].Render(shaderProgram, projectionMat, viewMat, gameState.textures[0]);
+	} else {
+		while (n > 0) {
+			int digit = n % 10;
+	    	n /= 10;
+
+			if (gameState.playerScoreIndicators.size() <= i) {
+				Plane* p = new Plane(gameState.playerScoreIndicators[i - 1].position.x - 0.1, 1.4, 0.1, 0.1);
+				gameState.playerScoreIndicators.push_back(*p);
+				delete p;
+			}
+
+			gameState.playerScoreIndicators[i].Render(shaderProgram, projectionMat, viewMat, gameState.textures[digit]);
+			i++;
+		}
+	}
+
+	gameState.scoreText.position.x = gameState.playerScoreIndicators.back().position.x - 0.3;
+	gameState.scoreText.Render(shaderProgram, projectionMat, viewMat, gameState.textures[15]);
 
 	SDL_GL_SwapWindow(window);
 }
@@ -336,6 +374,10 @@ void GenerateGame(bool firstGenerate) {
 		gameState.asteroids = *asteroids;
 		delete asteroids;
 
+		Plane* scoreText = new Plane(0.0f, 1.4, 0.4, 0.1);
+		gameState.scoreText = *scoreText;
+		delete scoreText;
+
 		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
 		gameState.player = *p;
 		delete p;
@@ -343,7 +385,7 @@ void GenerateGame(bool firstGenerate) {
 		for (int i = 0; i < 3; i++) {
 			GLfloat w = 0.1388, h = 0.1;
 
-			Plane* p = new Plane(left + (w / 2) + i * w, bottom - h / 2, w, h);
+			Plane* p = new Plane(left + (w / 2) + i * w, bottom - h / 2 - 0.05f, w, h);
 			gameState.playerLifeIndicators.push_back(*p);
 			delete p;
 		}
