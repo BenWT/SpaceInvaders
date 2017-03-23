@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	int x = display.w, y = display.h;
 
 	// Create Window
-	window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("Ben Townshend - CGP2012M - 13480634", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, x / 2, y	 / 2, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 	if (window == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_VIDEO, "SDL failed to create the window. \n");
 		return 1;
@@ -278,8 +278,8 @@ void Update(double deltaTime) {
 				alienIT->position.y -= 1.5f * deltaTime;
 			}
 		} else {
-			// do animate
 			if (gameState.playerBullets.size() > 0) gameState.playerBullets.clear();
+			if (gameState.enemyBullets.size() > 0) gameState.enemyBullets.clear();
 			gameState.player.position.y += 1.5f * deltaTime;
 		}
 
@@ -311,15 +311,21 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[3]);
 	}
 
+	vector<Plane>::iterator lifeIT;
+	for (lifeIT = gameState.playerLifeIndicators.begin(); lifeIT < gameState.playerLifeIndicators.end(); lifeIT++) {
+		lifeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[2]);
+	}
+
 	SDL_GL_SwapWindow(window);
 }
 
 void GenerateGame(bool firstGenerate) {
 	gameState.aliens.clear();
 	gameState.playerBullets.clear();
+	gameState.enemyBullets.clear();
 
-	int columns = 11, rows = 1;
-	GLfloat top = 1.5f, bottom = -1.5f, left = -2.0f, right = 2.0f, width = 0.25f, height = 0.18, gap = 0.1f;
+	int columns = 11, rows = 5;
+	GLfloat top = 1.3f, bottom = -1.3f, left = -1.9f, right = 1.9f, width = 0.25f, height = 0.18, gap = 0.1f;
 
 	if (firstGenerate) {
 		Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
@@ -333,6 +339,14 @@ void GenerateGame(bool firstGenerate) {
 		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
 		gameState.player = *p;
 		delete p;
+
+		for (int i = 0; i < 3; i++) {
+			GLfloat w = 0.1388, h = 0.1;
+
+			Plane* p = new Plane(left + (w / 2) + i * w, bottom - h / 2, w, h);
+			gameState.playerLifeIndicators.push_back(*p);
+			delete p;
+		}
 	} else {
 		gameState.player.position.y = bottom + (height / 2);
 	}

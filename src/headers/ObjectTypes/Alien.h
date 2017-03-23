@@ -28,8 +28,8 @@ public:
 	}
 
 	bool DoMove(double deltaTime) {
-		if (position.x > 2.0f - (w / 2) && moveRight) return true;
-		else if (position.x < -2.0f + (w / 2) && !moveRight) return true;
+		if (position.x > 1.9f - (w / 2) && moveRight) return true;
+		else if (position.x < -1.9f + (w / 2) && !moveRight) return true;
 
 		if (moveRight) position.Move(moveAmount * deltaTime, 0.0f, 0.0f);
 		else position.Move(-moveAmount * deltaTime, 0.0f, 0.0f);

@@ -13,6 +13,8 @@ public:
     Plane background;
     Plane asteroids;
     Player player;
+    int playerLives = 3, playerScore = 0;
+    std::vector<Plane> playerLifeIndicators;
     std::vector<PlayerBullet> playerBullets;
     std::vector<EnemyBullet> enemyBullets;
     std::vector<Alien> aliens;
@@ -57,6 +59,7 @@ public:
         for (pBulletIT = playerBullets.begin(); pBulletIT < playerBullets.end();) {
             bool shouldRemove = false;
 
+            // TODO destroy walls here
             for (alienIT = aliens.begin(); alienIT < aliens.end(); alienIT++) {
                 if (pBulletIT->shouldDestroy) {
                     shouldRemove = true;
@@ -65,6 +68,8 @@ public:
                     BulletImpact();
                     alienIT->isAlive = false;
                     shouldRemove = true;
+                    playerScore += 10;
+                    std::cout << playerScore << std::endl;
                     break;
                 }
             }
@@ -75,11 +80,11 @@ public:
         for (alienIT = aliens.begin(); alienIT < aliens.end();) {
             if (!alienIT->isAlive) {
                 alienIT->deathAnimTimer += deltaTime;
-                alienIT->position.Move(0, deltaTime * -0.3f, 0);
-                alienIT->rotation.Move(deltaTime * -45.0f, deltaTime * -45.0f, deltaTime * -45.0f);
-                alienIT->scale.Move(deltaTime * -0.45f, deltaTime * -0.45f, deltaTime * -0.45f);
+                alienIT->position.Move(0, deltaTime * -0.5f, 0);
+                alienIT->rotation.Move(deltaTime * -75.0f, deltaTime * -75.0f, deltaTime * -75.0f);
+                alienIT->scale.Move(deltaTime * -0.75f, deltaTime * -0.75f, deltaTime * -0.75f);
 
-                if (alienIT->deathAnimTimer >= 2.0f) alienIT = aliens.erase(alienIT);
+                if (alienIT->deathAnimTimer >= 1.5f) alienIT = aliens.erase(alienIT);
                 else alienIT++;
             } else {
                 alienIT++;
@@ -89,10 +94,12 @@ public:
         for (eBulletIT = enemyBullets.begin(); eBulletIT < enemyBullets.end();) {
             // TODO destroy walls here
             if (player.CheckCollision(eBulletIT->position.x, eBulletIT->position.y)) {
-                std::cout << "player" << std::endl;
-                return true;
+                eBulletIT->shouldDestroy = true;
+                playerLives--;
+                playerLifeIndicators.pop_back();
             }
 
+            if (playerLives < 1) return true;
             if (eBulletIT->shouldDestroy) eBulletIT = enemyBullets.erase(eBulletIT);
             else eBulletIT++;
         }

@@ -32,7 +32,7 @@ public:
     void DoMove(double deltaTime) {
         position.Move(moveAmount * deltaTime * movementInputX, 0.0f, 0.0f);
 
-        if (position.x > 2.0f - (w / 2)) position.x = 2.0f - (w / 2);
-        if (position.x < -2.0f + (w / 2)) position.x = -2.0f + (w / 2);
+        if (position.x > 1.9f - (w / 2)) position.x = 1.9f - (w / 2);
+        if (position.x < -1.9f + (w / 2)) position.x = -1.9f + (w / 2);
     }
 };
