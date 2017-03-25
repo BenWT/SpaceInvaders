@@ -17,12 +17,13 @@ public:
     int playerLives = 3, playerScore = 0;
     std::vector<Plane> playerLifeIndicators;
     std::vector<Plane> playerScoreIndicators;
+    std::vector<Plane> barricades;
     std::vector<PlayerBullet> playerBullets;
     std::vector<EnemyBullet> enemyBullets;
     std::vector<Alien> aliens;
 
-    SDL_Surface* images[16];
-    GLuint textures[16];
+    SDL_Surface* images[19];
+    GLuint textures[19];
 
     double bulletTimer = 0.0, fireDelay = 0.5, endgameCounter = 0.0;
     bool isEndgame = false;
@@ -40,9 +41,9 @@ public:
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
 
-    	glGenTextures(16, textures);
+    	glGenTextures(19, textures);
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 19; i++) {
             glBindTexture(GL_TEXTURE_2D, textures[i]);
         	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[i]->w, images[i]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]->pixels);
         	glGenerateMipmap(GL_TEXTURE_2D);
@@ -71,7 +72,6 @@ public:
                     alienIT->isAlive = false;
                     shouldRemove = true;
                     playerScore += 10;
-                    std::cout << playerScore << std::endl;
                     break;
                 }
             }

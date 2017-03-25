@@ -164,16 +164,22 @@ int main(int argc, char *argv[]) {
 
 	SDL_Surface* image0 = IMG_Load("assets/background.png");
 	SDL_Surface* image1 = IMG_Load("assets/asteroids.png");
-	SDL_Surface* image2 = IMG_Load("assets/player.png");
-	SDL_Surface* image3 = IMG_Load("assets/alien.png");
+	SDL_Surface* image2 = IMG_Load("assets/player.png"); // barricade 1
+	SDL_Surface* image3 = IMG_Load("assets/player.png"); // barricade 2
 	SDL_Surface* image4 = IMG_Load("assets/player.png");
-	SDL_Surface* image5 = IMG_Load("assets/numbers/score.png");
+	SDL_Surface* image5 = IMG_Load("assets/alien.png");
+	SDL_Surface* image6 = IMG_Load("assets/alien.png");
+	SDL_Surface* image7 = IMG_Load("assets/player.png"); // bullet
+	SDL_Surface* image8 = IMG_Load("assets/numbers/score.png");
 	gameState.images[10] = image0;
 	gameState.images[11] = image1;
 	gameState.images[12] = image2;
 	gameState.images[13] = image3;
 	gameState.images[14] = image4;
 	gameState.images[15] = image5;
+	gameState.images[16] = image6;
+	gameState.images[17] = image7;
+	gameState.images[18] = image8;
 
 	gameState.GenerateTextures();
 
@@ -304,27 +310,31 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 
 	gameState.background.Render(shaderProgram, projectionMat, viewMat, gameState.textures[10]);
 	gameState.asteroids.Render(shaderProgram, projectionMat, viewMat, gameState.textures[11]);
-	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]);
+	gameState.player.Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
 
 	vector<PlayerBullet>::iterator pBulletIT;
 	vector<EnemyBullet>::iterator eBulletIT;
 	for (pBulletIT = gameState.playerBullets.begin(); pBulletIT < gameState.playerBullets.end(); pBulletIT++) {
-		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
+		pBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[17]);
 	}
 	for (eBulletIT = gameState.enemyBullets.begin(); eBulletIT < gameState.enemyBullets.end(); eBulletIT++) {
-		eBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
+		eBulletIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[17]);
 	}
 
 	vector<Alien>::iterator alienIT;
 	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[13]);
+		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[15]); // TODO animate here
+	}
+
+	vector<Plane>::iterator barricadeIT;
+	for (barricadeIT = gameState.barricades.begin(); barricadeIT < gameState.barricades.end(); barricadeIT++) {
+		barricadeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]); // TODO degrade here
 	}
 
 	vector<Plane>::iterator lifeIT;
 	for (lifeIT = gameState.playerLifeIndicators.begin(); lifeIT < gameState.playerLifeIndicators.end(); lifeIT++) {
-		lifeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]);
+		lifeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
 	}
-
 
 	int n = gameState.playerScore, i = 0;
 	if (n == 0) {
@@ -352,7 +362,7 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 	}
 
 	gameState.scoreText.position.x = gameState.playerScoreIndicators.back().position.x - 0.3;
-	gameState.scoreText.Render(shaderProgram, projectionMat, viewMat, gameState.textures[15]);
+	gameState.scoreText.Render(shaderProgram, projectionMat, viewMat, gameState.textures[18]);
 
 	SDL_GL_SwapWindow(window);
 }
@@ -388,6 +398,19 @@ void GenerateGame(bool firstGenerate) {
 			Plane* p = new Plane(left + (w / 2) + i * w, bottom - h / 2 - 0.05f, w, h);
 			gameState.playerLifeIndicators.push_back(*p);
 			delete p;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			GLfloat w = (right * 2) / 4;
+
+			for (int x = 0; x < 10; x++) {
+				for (int y = 0; y < 5; y++) {
+					GLfloat sectionWidth = (w - 0.2) / 10, sectionHeight = 0.2 / 5;
+					Plane* p = new Plane(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), 0.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
+					gameState.barricades.push_back(*p);
+					delete p;
+				}
+			}
 		}
 	} else {
 		gameState.player.position.y = bottom + (height / 2);
