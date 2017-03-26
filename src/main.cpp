@@ -404,9 +404,11 @@ void GenerateGame(bool firstGenerate) {
 			GLfloat w = (right * 2) / 4;
 
 			for (int x = 0; x < 10; x++) {
-				for (int y = 0; y < 5; y++) {
-					GLfloat sectionWidth = (w - 0.2) / 10, sectionHeight = 0.2 / 5;
-					Plane* p = new Plane(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), 0.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
+				for (int y = 0; y < 3; y++) {
+					GLfloat sectionWidth = (w - 0.2) / 10, sectionHeight;
+					sectionHeight = sectionWidth;
+
+					Plane* p = new Plane(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), -1.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
 					gameState.barricades.push_back(*p);
 					delete p;
 				}

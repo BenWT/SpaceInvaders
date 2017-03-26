@@ -55,6 +55,7 @@ public:
     bool DoCollisions(double deltaTime) {
         bulletTimer += deltaTime;
 
+        std::vector<Plane>::iterator barricadeIT;
         std::vector<Alien>::iterator alienIT;
         std::vector<PlayerBullet>::iterator pBulletIT;
         std::vector<EnemyBullet>::iterator eBulletIT;
@@ -62,17 +63,27 @@ public:
         for (pBulletIT = playerBullets.begin(); pBulletIT < playerBullets.end();) {
             bool shouldRemove = false;
 
-            // TODO destroy walls here
-            for (alienIT = aliens.begin(); alienIT < aliens.end(); alienIT++) {
-                if (pBulletIT->shouldDestroy) {
-                    shouldRemove = true;
-                    break;
-                } else if (alienIT->CheckCollision(pBulletIT->position.x, pBulletIT->position.y) && alienIT->isAlive) {
-                    BulletImpact();
-                    alienIT->isAlive = false;
-                    shouldRemove = true;
-                    playerScore += 10;
-                    break;
+            if (pBulletIT->shouldDestroy) shouldRemove = true;
+
+            if (!shouldRemove) {
+                for (alienIT = aliens.begin(); alienIT < aliens.end(); alienIT++) {
+                    if (alienIT->CheckCollision(pBulletIT->position.x, pBulletIT->position.y + (pBulletIT->h / 2)) && !shouldRemove && alienIT->isAlive) {
+                        BulletImpact();
+                        alienIT->isAlive = false;
+                        shouldRemove = true;
+                        playerScore += 10;
+                        break;
+                    }
+                }
+
+                for (barricadeIT = barricades.begin(); barricadeIT != barricades.end();) {
+                    if (barricadeIT->CheckCollision(pBulletIT->position.x, pBulletIT->position.y) && !shouldRemove) {
+                        barricadeIT = barricades.erase(barricadeIT);
+                        shouldRemove = true;
+                        break;
+                    } else {
+                        ++barricadeIT;
+                    }
                 }
             }
 
@@ -93,16 +104,34 @@ public:
             }
         }
 
+        bool hitPlayer;
         for (eBulletIT = enemyBullets.begin(); eBulletIT < enemyBullets.end();) {
-            // TODO destroy walls here
-            if (player.CheckCollision(eBulletIT->position.x, eBulletIT->position.y)) {
-                eBulletIT->shouldDestroy = true;
-                playerLives--;
-                playerLifeIndicators.pop_back();
+            bool shouldRemove = false, hitPlayer = false;
+
+            if (eBulletIT->shouldDestroy) shouldRemove = true;
+
+            if (!shouldRemove) {
+                for (barricadeIT = barricades.begin(); barricadeIT != barricades.end();) {
+                    if (barricadeIT->CheckCollision(eBulletIT->position.x, eBulletIT->position.y) && !shouldRemove) {
+                        barricadeIT = barricades.erase(barricadeIT);
+                        shouldRemove = true;
+                        break;
+                    } else {
+                        ++barricadeIT;
+                    }
+                }
+
+                if (player.CheckCollision(eBulletIT->position.x, eBulletIT->position.y) && !shouldRemove && !hitPlayer) {
+                    std::cout << "hit player" << std::endl;
+                    hitPlayer = true;
+                    shouldRemove = true;
+                    playerLives--;
+                    if (playerLifeIndicators.size() > 0) playerLifeIndicators.pop_back();
+                }
             }
 
             if (playerLives < 1) return true;
-            if (eBulletIT->shouldDestroy) eBulletIT = enemyBullets.erase(eBulletIT);
+            if (shouldRemove) eBulletIT = enemyBullets.erase(eBulletIT);
             else eBulletIT++;
         }
         return false;
