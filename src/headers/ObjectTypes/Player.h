@@ -18,7 +18,7 @@ public:
 		this->w = size;
 		this->h = size;
 
-		SetPlane();
+		SetPlane(1.0f);
 	}
 	Player(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 		this->position.x = x;
@@ -26,13 +26,17 @@ public:
 		this->w = w;
 		this->h = h;
 
-		SetPlane();
+		SetPlane(1.0f);
 	}
 
-    void DoMove(double deltaTime) {
+    float DoMove(double deltaTime) {
+		float x = position.x;
+
         position.Move(moveAmount * deltaTime * movementInputX, 0.0f, 0.0f);
 
         if (position.x > 1.9f - (w / 2)) position.x = 1.9f - (w / 2);
         if (position.x < -1.9f + (w / 2)) position.x = -1.9f + (w / 2);
+
+		return (position.x - x);
     }
 };

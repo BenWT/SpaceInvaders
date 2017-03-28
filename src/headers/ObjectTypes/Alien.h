@@ -16,7 +16,7 @@ public:
 		this->w = size;
 		this->h = size;
 
-		SetPlane();
+		SetPlane(1.0f);
 	}
 	Alien(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 		this->position.x = x;
@@ -24,7 +24,7 @@ public:
 		this->w = w;
 		this->h = h;
 
-		SetPlane();
+		SetPlane(1.0f);
 	}
 
 	bool DoMove(double deltaTime) {

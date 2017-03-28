@@ -15,7 +15,7 @@ public:
 		this->w = size;
 		this->h = size;
 
-		SetPlane();
+		SetPlane(1.0f);
 	}
 	EnemyBullet(GLfloat x, GLfloat y, GLfloat w, GLfloat h) {
 		this->position.x = x;
@@ -23,7 +23,7 @@ public:
 		this->w = w;
 		this->h = h;
 
-		SetPlane();
+		SetPlane(1.0f);
 	}
 
     void DoMove(double deltaTime) {

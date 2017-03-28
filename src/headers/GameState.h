@@ -4,6 +4,7 @@
 #include <iterator>
 #include "Vector3.h"
 #include "ObjectTypes/Alien.h"
+#include "ObjectTypes/Barricade.h"
 #include "ObjectTypes/Player.h"
 #include "ObjectTypes/PlayerBullet.h"
 #include "ObjectTypes/EnemyBullet.h"
@@ -17,14 +18,16 @@ public:
     int playerLives = 3, playerScore = 0;
     std::vector<Plane> playerLifeIndicators;
     std::vector<Plane> playerScoreIndicators;
-    std::vector<Plane> barricades;
+    std::vector<Plane> edges;
+    std::vector<Barricade> barricades;
     std::vector<PlayerBullet> playerBullets;
     std::vector<EnemyBullet> enemyBullets;
     std::vector<Alien> aliens;
 
-    SDL_Surface* images[19];
-    GLuint textures[19];
+    SDL_Surface* images[20];
+    GLuint textures[20];
 
+    float gameTime = 0.0;
     double bulletTimer = 0.0, fireDelay = 0.5, endgameCounter = 0.0;
     bool isEndgame = false;
 
@@ -35,15 +38,15 @@ public:
     void GenerateTextures() {
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
 
-    	glGenTextures(19, textures);
+    	glGenTextures(20, textures);
 
-        for (int i = 0; i < 19; i++) {
+        for (int i = 0; i < 20; i++) {
             glBindTexture(GL_TEXTURE_2D, textures[i]);
         	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[i]->w, images[i]->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, images[i]->pixels);
         	glGenerateMipmap(GL_TEXTURE_2D);
@@ -55,7 +58,7 @@ public:
     bool DoCollisions(double deltaTime) {
         bulletTimer += deltaTime;
 
-        std::vector<Plane>::iterator barricadeIT;
+        std::vector<Barricade>::iterator barricadeIT;
         std::vector<Alien>::iterator alienIT;
         std::vector<PlayerBullet>::iterator pBulletIT;
         std::vector<EnemyBullet>::iterator eBulletIT;
@@ -68,7 +71,6 @@ public:
             if (!shouldRemove) {
                 for (alienIT = aliens.begin(); alienIT < aliens.end(); alienIT++) {
                     if (alienIT->CheckCollision(pBulletIT->position.x, pBulletIT->position.y + (pBulletIT->h / 2)) && !shouldRemove && alienIT->isAlive) {
-                        BulletImpact();
                         alienIT->isAlive = false;
                         shouldRemove = true;
                         playerScore += 10;
@@ -78,11 +80,13 @@ public:
 
                 for (barricadeIT = barricades.begin(); barricadeIT != barricades.end();) {
                     if (barricadeIT->CheckCollision(pBulletIT->position.x, pBulletIT->position.y) && !shouldRemove) {
-                        barricadeIT = barricades.erase(barricadeIT);
                         shouldRemove = true;
+                        barricadeIT->lives--;
+                        if (barricadeIT-> lives < 1) barricadeIT = barricades.erase(barricadeIT);
+                        else barricadeIT++;
                         break;
                     } else {
-                        ++barricadeIT;
+                        barricadeIT++;
                     }
                 }
             }
@@ -113,16 +117,17 @@ public:
             if (!shouldRemove) {
                 for (barricadeIT = barricades.begin(); barricadeIT != barricades.end();) {
                     if (barricadeIT->CheckCollision(eBulletIT->position.x, eBulletIT->position.y) && !shouldRemove) {
-                        barricadeIT = barricades.erase(barricadeIT);
                         shouldRemove = true;
+                        barricadeIT->lives--;
+                        if (barricadeIT-> lives < 1) barricadeIT = barricades.erase(barricadeIT);
+                        else barricadeIT++;
                         break;
                     } else {
-                        ++barricadeIT;
+                        barricadeIT++;
                     }
                 }
 
                 if (player.CheckCollision(eBulletIT->position.x, eBulletIT->position.y) && !shouldRemove && !hitPlayer) {
-                    std::cout << "hit player" << std::endl;
                     hitPlayer = true;
                     shouldRemove = true;
                     playerLives--;
@@ -139,7 +144,7 @@ public:
 
     void PlayerFire() {
         if (bulletTimer >= fireDelay) {
-            PlayerBullet* b = new PlayerBullet(player.position.x, player.position.y, 0.025f, 0.12f);
+            PlayerBullet* b = new PlayerBullet(player.position.x, player.position.y, 0.026f, 0.12f);
             playerBullets.push_back(*b);
             delete b;
 
@@ -148,7 +153,8 @@ public:
     }
 
     void EnemyFire(int i) {
-        EnemyBullet* b = new EnemyBullet(aliens[i].position.x, aliens[i].position.y, 0.025f, 0.12f);
+        EnemyBullet* b = new EnemyBullet(aliens[i].position.x, aliens[i].position.y, 0.026f, 0.12f);
+        b->scale.y = -1;
         enemyBullets.push_back(*b);
         delete b;
     }

@@ -21,14 +21,22 @@ public:
 		this->w = w;
 		this->h = h;
 
-		SetPlane();
+		SetPlane(1.0f);
+	}
+	Plane(GLfloat x, GLfloat y, GLfloat w, GLfloat h, float uvScale) {
+		this->position.x = x;
+		this->position.y = y;
+		this->w = w;
+		this->h = h;
+
+		SetPlane(uvScale);
 	}
 
-	void SetPlane() {
-		AddCoord(0.0f - (w / 2), 0.0f + (h / 2), 0.0f, 1.0f); // Top Left
-		AddCoord(0.0f + (w / 2), 0.0f + (h / 2), 1.0f, 1.0f); // Top Right
-		AddCoord(0.0f - (w / 2), 0.0f - (h / 2), 0.0f, 0.0f); // Bottom Left
-		AddCoord(0.0f + (w / 2), 0.0f - (h / 2), 1.0f, 0.0f); // Bottom Right
+	void SetPlane(float scale) {
+		AddCoord(0.0f - (w / 2), 0.0f + (h / 2), 0.0f * scale, 1.0f * scale); // Top Left
+		AddCoord(0.0f + (w / 2), 0.0f + (h / 2), 1.0f * scale, 1.0f * scale); // Top Right
+		AddCoord(0.0f - (w / 2), 0.0f - (h / 2), 0.0f * scale, 0.0f * scale); // Bottom Left
+		AddCoord(0.0f + (w / 2), 0.0f - (h / 2), 1.0f * scale, 0.0f * scale); // Bottom Right
 
 		indices.push_back(2);
 		indices.push_back(0);

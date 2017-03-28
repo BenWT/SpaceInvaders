@@ -13,10 +13,11 @@ add_executable(${PROJECT_NAME}
 	src/headers/GameObject.h
 	src/headers/GameState.h
 	src/headers/ObjectTypes/Alien.h
+	src/headers/ObjectTypes/Barricade.h
+	src/headers/ObjectTypes/EnemyBullet.h
 	src/headers/ObjectTypes/Plane.h
 	src/headers/ObjectTypes/Player.h
 	src/headers/ObjectTypes/PlayerBullet.h
-	src/headers/ObjectTypes/EnemyBullet.h
 )
 
 target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})

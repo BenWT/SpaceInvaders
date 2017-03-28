@@ -24,6 +24,7 @@
 #include "headers/ObjectTypes/Plane.h"
 #include "headers/ObjectTypes/Player.h"
 #include "headers/ObjectTypes/Alien.h"
+#include "headers/ObjectTypes/Barricade.h"
 #include "headers/ObjectTypes/PlayerBullet.h"
 #include "headers/ObjectTypes/EnemyBullet.h"
 
@@ -37,6 +38,7 @@ using namespace chrono;
 SDL_Window* window;
 SDL_GLContext context;
 bool running = false;
+glm::mat4 projectionMat, viewMat, overlayMat;
 GLfloat viewportHeight, viewportWidth;
 GameState gameState;
 
@@ -147,12 +149,11 @@ int main(int argc, char *argv[]) {
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
-	glm::mat4 projectionMat, viewMat;
-
 	// force 4:3 aspect using viewport
 	SizeWindow();
 	projectionMat = glm::ortho(0.0f, 4.0f, 0.0f, 3.0f, -1.0f, 100.0f);
 	viewMat = glm::translate(viewMat, glm::vec3(2.0f, 1.5f, 0.0f));
+	overlayMat = viewMat;
 
 	gameState = GameState();
 
@@ -164,13 +165,14 @@ int main(int argc, char *argv[]) {
 
 	SDL_Surface* image0 = IMG_Load("assets/background.png");
 	SDL_Surface* image1 = IMG_Load("assets/asteroids.png");
-	SDL_Surface* image2 = IMG_Load("assets/player.png"); // barricade 1
-	SDL_Surface* image3 = IMG_Load("assets/player.png"); // barricade 2
+	SDL_Surface* image2 = IMG_Load("assets/barricade.png");
+	SDL_Surface* image3 = IMG_Load("assets/barricade-broken.png");
 	SDL_Surface* image4 = IMG_Load("assets/player.png");
 	SDL_Surface* image5 = IMG_Load("assets/alien.png");
-	SDL_Surface* image6 = IMG_Load("assets/alien.png");
-	SDL_Surface* image7 = IMG_Load("assets/player.png"); // bullet
-	SDL_Surface* image8 = IMG_Load("assets/numbers/score.png");
+	SDL_Surface* image6 = IMG_Load("assets/alien2.png");
+	SDL_Surface* image7 = IMG_Load("assets/bullet.png"); // bullet
+	SDL_Surface* image8 = IMG_Load("assets/white.png"); // edge
+	SDL_Surface* image9 = IMG_Load("assets/numbers/score.png");
 	gameState.images[10] = image0;
 	gameState.images[11] = image1;
 	gameState.images[12] = image2;
@@ -180,6 +182,7 @@ int main(int argc, char *argv[]) {
 	gameState.images[16] = image6;
 	gameState.images[17] = image7;
 	gameState.images[18] = image8;
+	gameState.images[19] = image9;
 
 	gameState.GenerateTextures();
 
@@ -256,7 +259,8 @@ void Update(double deltaTime) {
 	if (gameState.aliens.size() > 0 && !gameState.isEndgame) {
 		if (gameState.DoCollisions(deltaTime)) running = false;
 
-		gameState.player.DoMove(deltaTime);
+		float moveAmount = gameState.player.DoMove(deltaTime);
+		viewMat = glm::translate(viewMat, glm::vec3(-moveAmount / 4, 0.0, 0.0));
 
 		int v = rand() % 1200;
 		if (v < gameState.aliens.size()) gameState.EnemyFire(v);
@@ -300,9 +304,12 @@ void Update(double deltaTime) {
 
 		gameState.endgameCounter += deltaTime;
 	}
+
+	gameState.gameTime += deltaTime;
 }
 
 void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat) {
+	int animTime = (int)gameState.gameTime % 2;
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -323,17 +330,24 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 
 	vector<Alien>::iterator alienIT;
 	for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
-		alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[15]); // TODO animate here
+		if (animTime == 0) alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[15]);
+		else alienIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[16]);
 	}
 
-	vector<Plane>::iterator barricadeIT;
+	vector<Barricade>::iterator barricadeIT;
 	for (barricadeIT = gameState.barricades.begin(); barricadeIT < gameState.barricades.end(); barricadeIT++) {
-		barricadeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]); // TODO degrade here
+		if (barricadeIT->lives == 2) barricadeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[12]);
+		else barricadeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[13]);
+	}
+
+	vector<Plane>::iterator edgeIT;
+	for (edgeIT = gameState.edges.begin(); edgeIT < gameState.edges.end(); edgeIT++) {
+		edgeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[18]);
 	}
 
 	vector<Plane>::iterator lifeIT;
 	for (lifeIT = gameState.playerLifeIndicators.begin(); lifeIT < gameState.playerLifeIndicators.end(); lifeIT++) {
-		lifeIT->Render(shaderProgram, projectionMat, viewMat, gameState.textures[14]);
+		lifeIT->Render(shaderProgram, projectionMat, overlayMat, gameState.textures[14]);
 	}
 
 	int n = gameState.playerScore, i = 0;
@@ -344,7 +358,7 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 			delete p;
 		}
 
-		gameState.playerScoreIndicators[0].Render(shaderProgram, projectionMat, viewMat, gameState.textures[0]);
+		gameState.playerScoreIndicators[0].Render(shaderProgram, projectionMat, overlayMat, gameState.textures[0]);
 	} else {
 		while (n > 0) {
 			int digit = n % 10;
@@ -356,13 +370,13 @@ void Render(GLuint &shaderProgram, glm::mat4 &projectionMat, glm::mat4 &viewMat)
 				delete p;
 			}
 
-			gameState.playerScoreIndicators[i].Render(shaderProgram, projectionMat, viewMat, gameState.textures[digit]);
+			gameState.playerScoreIndicators[i].Render(shaderProgram, projectionMat, overlayMat, gameState.textures[digit]);
 			i++;
 		}
 	}
 
 	gameState.scoreText.position.x = gameState.playerScoreIndicators.back().position.x - 0.3;
-	gameState.scoreText.Render(shaderProgram, projectionMat, viewMat, gameState.textures[18]);
+	gameState.scoreText.Render(shaderProgram, projectionMat, overlayMat, gameState.textures[19]);
 
 	SDL_GL_SwapWindow(window);
 }
@@ -376,11 +390,11 @@ void GenerateGame(bool firstGenerate) {
 	GLfloat top = 1.3f, bottom = -1.3f, left = -1.9f, right = 1.9f, width = 0.25f, height = 0.18, gap = 0.1f;
 
 	if (firstGenerate) {
-		Plane* bg = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
+		Plane* bg = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
 		gameState.background = *bg;
 		delete bg;
 
-		Plane* asteroids = new Plane(0.0f, 0.0f, 4.0f, 3.0f);
+		Plane* asteroids = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
 		gameState.asteroids = *asteroids;
 		delete asteroids;
 
@@ -391,6 +405,13 @@ void GenerateGame(bool firstGenerate) {
 		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
 		gameState.player = *p;
 		delete p;
+
+		Plane* edgeL = new Plane(left - 0.05, 0.0, 0.1, 2.6);
+		gameState.edges.push_back(*edgeL);
+		delete edgeL;
+		Plane* edgeR = new Plane(right + 0.05, 0.0, 0.1, 2.6);
+		gameState.edges.push_back(*edgeR);
+		delete edgeR;
 
 		for (int i = 0; i < 3; i++) {
 			GLfloat w = 0.1388, h = 0.1;
@@ -408,7 +429,7 @@ void GenerateGame(bool firstGenerate) {
 					GLfloat sectionWidth = (w - 0.2) / 10, sectionHeight;
 					sectionHeight = sectionWidth;
 
-					Plane* p = new Plane(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), -1.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
+					Barricade* p = new Barricade(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), -1.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
 					gameState.barricades.push_back(*p);
 					delete p;
 				}
