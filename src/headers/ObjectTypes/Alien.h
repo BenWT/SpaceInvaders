@@ -40,6 +40,6 @@ public:
 	void MoveDown() {
 		position.Move(0, -h, 0);
 		moveRight = !moveRight;
-		moveAmount += 0.01f;
+		moveAmount += 0.02f;
 	}
 };

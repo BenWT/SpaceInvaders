@@ -257,7 +257,10 @@ void Update(double deltaTime) {
 	gameState.asteroids.uvoff.y -= deltaTime * 0.05f;
 
 	if (gameState.aliens.size() > 0 && !gameState.isEndgame) {
-		if (gameState.DoCollisions(deltaTime)) running = false;
+		if (gameState.DoCollisions(deltaTime)) {
+			viewMat = glm::translate(viewMat, glm::vec3(gameState.player.position.x / 4, 0.0, 0.0));
+			GenerateGame(true);
+		}
 
 		float moveAmount = gameState.player.DoMove(deltaTime);
 		viewMat = glm::translate(viewMat, glm::vec3(-moveAmount / 4, 0.0, 0.0));
@@ -281,6 +284,12 @@ void Update(double deltaTime) {
 		if (shouldMoveDown) {
 			for (alienIT = gameState.aliens.begin(); alienIT < gameState.aliens.end(); alienIT++) {
 				alienIT->MoveDown();
+
+				if (alienIT->position.y < -1.2f) {
+					viewMat = glm::translate(viewMat, glm::vec3(gameState.player.position.x / 4, 0.0, 0.0));
+					GenerateGame(true);
+					break;
+				}
 			}
 		}
 	} else {
@@ -390,6 +399,12 @@ void GenerateGame(bool firstGenerate) {
 	GLfloat top = 1.3f, bottom = -1.3f, left = -1.9f, right = 1.9f, width = 0.25f, height = 0.18, gap = 0.1f;
 
 	if (firstGenerate) {
+		gameState.playerScore = 0.0;
+		gameState.playerLives = 3;
+		gameState.edges.clear();
+		gameState.playerLifeIndicators.clear();
+		gameState.barricades.clear();
+
 		Plane* bg = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
 		gameState.background = *bg;
 		delete bg;
