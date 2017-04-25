@@ -17,6 +17,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <assimp>
 #include "headers/Shaders.h"
 #include "headers/Vector3.h"
 #include "headers/GameObject.h"
@@ -395,71 +396,73 @@ void GenerateGame(bool firstGenerate) {
 	gameState.playerBullets.clear();
 	gameState.enemyBullets.clear();
 
-	int columns = 11, rows = 5;
-	GLfloat top = 1.3f, bottom = -1.3f, left = -1.9f, right = 1.9f, width = 0.25f, height = 0.18, gap = 0.1f;
+	
 
-	if (firstGenerate) {
-		gameState.playerScore = 0.0;
-		gameState.playerLives = 3;
-		gameState.edges.clear();
-		gameState.playerLifeIndicators.clear();
-		gameState.barricades.clear();
-
-		Plane* bg = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
-		gameState.background = *bg;
-		delete bg;
-
-		Plane* asteroids = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
-		gameState.asteroids = *asteroids;
-		delete asteroids;
-
-		Plane* scoreText = new Plane(0.0f, 1.4, 0.4, 0.1);
-		gameState.scoreText = *scoreText;
-		delete scoreText;
-
-		Player* p = new Player(0.0f, bottom + (height / 2), width, height);
-		gameState.player = *p;
-		delete p;
-
-		Plane* edgeL = new Plane(left - 0.05, 0.0, 0.1, 2.6);
-		gameState.edges.push_back(*edgeL);
-		delete edgeL;
-		Plane* edgeR = new Plane(right + 0.05, 0.0, 0.1, 2.6);
-		gameState.edges.push_back(*edgeR);
-		delete edgeR;
-
-		for (int i = 0; i < 3; i++) {
-			GLfloat w = 0.1388, h = 0.1;
-
-			Plane* p = new Plane(left + (w / 2) + i * w, bottom - h / 2 - 0.05f, w, h);
-			gameState.playerLifeIndicators.push_back(*p);
-			delete p;
-		}
-
-		for (int i = 0; i < 4; i++) {
-			GLfloat w = (right * 2) / 4;
-
-			for (int x = 0; x < 10; x++) {
-				for (int y = 0; y < 3; y++) {
-					GLfloat sectionWidth = (w - 0.2) / 10, sectionHeight;
-					sectionHeight = sectionWidth;
-
-					Barricade* p = new Barricade(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), -1.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
-					gameState.barricades.push_back(*p);
-					delete p;
-				}
-			}
-		}
-	} else {
-		gameState.player.position.y = bottom + (height / 2);
-	}
-
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < columns; j++) {
-			Alien* a = new Alien((left + width / 2 + gap) + (j * width), (top - height / 2) - (i * height), width, height);
-			if (!firstGenerate) a->position.y += 1.5f;
-			gameState.aliens.push_back(*a);
-			delete a;
-		}
-	}
+	// int columns = 11, rows = 5;
+	// GLfloat top = 1.3f, bottom = -1.3f, left = -1.9f, right = 1.9f, width = 0.25f, height = 0.18, gap = 0.1f;
+	//
+	// if (firstGenerate) {
+	// 	gameState.playerScore = 0.0;
+	// 	gameState.playerLives = 3;
+	// 	gameState.edges.clear();
+	// 	gameState.playerLifeIndicators.clear();
+	// 	gameState.barricades.clear();
+	//
+	// 	Plane* bg = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
+	// 	gameState.background = *bg;
+	// 	delete bg;
+	//
+	// 	Plane* asteroids = new Plane(0.0f, 0.0f, 8.0f, 6.0f, 2.0f);
+	// 	gameState.asteroids = *asteroids;
+	// 	delete asteroids;
+	//
+	// 	Plane* scoreText = new Plane(0.0f, 1.4, 0.4, 0.1);
+	// 	gameState.scoreText = *scoreText;
+	// 	delete scoreText;
+	//
+	// 	Player* p = new Player(0.0f, bottom + (height / 2), width, height);
+	// 	gameState.player = *p;
+	// 	delete p;
+	//
+	// 	Plane* edgeL = new Plane(left - 0.05, 0.0, 0.1, 2.6);
+	// 	gameState.edges.push_back(*edgeL);
+	// 	delete edgeL;
+	// 	Plane* edgeR = new Plane(right + 0.05, 0.0, 0.1, 2.6);
+	// 	gameState.edges.push_back(*edgeR);
+	// 	delete edgeR;
+	//
+	// 	for (int i = 0; i < 3; i++) {
+	// 		GLfloat w = 0.1388, h = 0.1;
+	//
+	// 		Plane* p = new Plane(left + (w / 2) + i * w, bottom - h / 2 - 0.05f, w, h);
+	// 		gameState.playerLifeIndicators.push_back(*p);
+	// 		delete p;
+	// 	}
+	//
+	// 	for (int i = 0; i < 4; i++) {
+	// 		GLfloat w = (right * 2) / 4;
+	//
+	// 		for (int x = 0; x < 10; x++) {
+	// 			for (int y = 0; y < 3; y++) {
+	// 				GLfloat sectionWidth = (w - 0.2) / 10, sectionHeight;
+	// 				sectionHeight = sectionWidth;
+	//
+	// 				Barricade* p = new Barricade(0.1 + left + i * w + x * sectionWidth + (sectionWidth / 2), -1.0 + y * sectionHeight + (sectionHeight / 2), sectionWidth, sectionHeight);
+	// 				gameState.barricades.push_back(*p);
+	// 				delete p;
+	// 			}
+	// 		}
+	// 	}
+	// } else {
+	// 	gameState.player.position.y = bottom + (height / 2);
+	// }
+	//
+	// for (int i = 0; i < rows; i++) {
+	// 	for (int j = 0; j < columns; j++) {
+	// 		Alien* a = new Alien((left + width / 2 + gap) + (j * width), (top - height / 2) - (i * height), width, height);
+	// 		if (!firstGenerate) a->position.y += 1.5f;
+	// 		gameState.aliens.push_back(*a);
+	// 		delete a;
+	// 	}
+	// }
 }
